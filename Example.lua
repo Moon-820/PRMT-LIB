@@ -1,7 +1,7 @@
 -- TryxLib | Example.lua
 -- Exemple d'utilisation complète
 
-local Tryx = loadstring(game:HttpGet("https://raw.githubusercontent.com/TON_GITHUB/TryxLib/main/dist/main.lua"))()
+local Tryx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua"))()
 
 local Window = Tryx:CreateWindow({
     Title    = "TryxHub",
