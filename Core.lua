@@ -448,9 +448,10 @@ function TryxLib:CreateWindow(config)
         local iconLbl = label(tabBtn, tabIcon, theme.Accent, 12, Enum.Font.GothamMedium)
         iconLbl.Size = UDim2.new(0, 14, 1, 0)
         iconLbl.TextXAlignment = Enum.TextXAlignment.Center
+        iconLbl.Visible = (tabIcon ~= "")
 
         local titleLbl = label(tabBtn, tabTitle, theme.TextSecondary, isMobile and 11 or 12, Enum.Font.GothamMedium)
-        titleLbl.Size = UDim2.new(1, -30, 1, 0)
+        titleLbl.Size = UDim2.new(1, -20, 1, 0)
 
         local page = Instance.new("ScrollingFrame")
         page.Name = "Page_" .. tabTitle
