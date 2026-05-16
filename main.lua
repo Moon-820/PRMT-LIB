@@ -454,9 +454,10 @@ function TryxLib:CreateWindow(config)
         local iconLbl = label(tabBtn, tabIcon, theme.Accent, 12, Enum.Font.GothamMedium)
         iconLbl.Size = UDim2.new(0, 14, 1, 0)
         iconLbl.TextXAlignment = Enum.TextXAlignment.Center
+        iconLbl.Visible = (tabIcon ~= "")
 
         local titleLbl = label(tabBtn, tabTitle, theme.TextSecondary, isMobile and 11 or 12, Enum.Font.GothamMedium)
-        titleLbl.Size = UDim2.new(1, -30, 1, 0)
+        titleLbl.Size = UDim2.new(1, -20, 1, 0)
 
         local page = Instance.new("ScrollingFrame")
         page.Name = "Page_" .. tabTitle
@@ -1388,7 +1389,25 @@ function Elements.Section(tab, cfg)
     end
 
     tab:_addElement(f)
-    return f
+
+    local sectionObj = {}
+    sectionObj._page = f
+    sectionObj._theme = tab._theme
+    sectionObj._overlay = tab._overlay
+    sectionObj._gui = tab._gui
+    sectionObj._window = tab._window
+    sectionObj._isMobile = tab._isMobile
+
+    function sectionObj:_addElement(elem)
+        elem.Parent = f
+    end
+
+    Elements.inject(sectionObj)
+
+    function sectionObj:Destroy() f:Destroy() end
+    function sectionObj:SetTitle(t) titleLbl.Text = t end
+
+    return sectionObj
 end
 
 Elements.Frame = Elements.Section
@@ -1667,4 +1686,3 @@ function TryxLib:CreateWindow(config)
 end
 
 return TryxLib
-
