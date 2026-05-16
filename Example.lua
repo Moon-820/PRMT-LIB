@@ -1,11 +1,12 @@
 -- TryxLib | Example.lua
 -- Exemple d'utilisation complète
+-- Version test pouvant comporter des bugs
 
 local Tryx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua"))()
 
 local Window = Tryx:CreateWindow({
     Title    = "TryxHub",
-    Icon     = "★",
+    Icon     = "Star",
 })
 
 -- ── Tab Principal ──────────────────────────────────────
