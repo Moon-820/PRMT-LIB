@@ -1,6 +1,5 @@
 -- TryxLib | Core.lua
--- Fenetre, Drag, Resize, Sidebar, Tabs
--- Version améliorée : mobile responsive, drag/touch, resize/touch, overlay dropdown.
+-- Version 2.1 : Resize discret, visibilité accrue, corrections mobiles.
 
 local TryxLib = {}
 TryxLib.__index = TryxLib
@@ -42,7 +41,6 @@ local MIN_W_MOBILE      = 300
 local MIN_H_MOBILE      = 260
 local DEFAULT_W         = 620
 local DEFAULT_H         = 420
-local ELEMENT_PAD       = 6
 local ANIM_SPEED        = 0.18
 
 local function tween(obj, props, t)
@@ -58,10 +56,11 @@ local function corner(parent, r)
     return c
 end
 
-local function stroke(parent, color, thickness)
+local function stroke(parent, color, thickness, trans)
     local s = Instance.new("UIStroke")
     s.Color = color or Theme.ElementStroke
     s.Thickness = thickness or 1
+    s.Transparency = trans or 0
     s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     s.Parent = parent
     return s
@@ -91,16 +90,6 @@ local function label(parent, text, color, size, weight)
     return l
 end
 
-local function newFrame(parent, bg, size, pos)
-    local f = Instance.new("Frame")
-    f.BackgroundColor3 = bg or Theme.Background
-    f.Size             = size or UDim2.fromScale(1, 1)
-    f.Position         = pos or UDim2.new(0, 0, 0, 0)
-    f.BorderSizePixel  = 0
-    f.Parent           = parent
-    return f
-end
-
 local function isPress(input)
     return input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch
 end
@@ -111,42 +100,13 @@ end
 
 local function viewportSize()
     local cam = workspace.CurrentCamera
-    if cam then return cam.ViewportSize end
-    return Vector2.new(800, 600)
-end
-
-local function computeWindowSize(config)
-    local vp = viewportSize()
-    local margin = config.MobileMargin or 18
-    local isMobile = UserInputService.TouchEnabled and (vp.X <= 700 or not UserInputService.KeyboardEnabled)
-
-    local minW = config.MinWidth or (isMobile and MIN_W_MOBILE or MIN_W_DESKTOP)
-    local minH = config.MinHeight or (isMobile and MIN_H_MOBILE or MIN_H_DESKTOP)
-    local maxW = math.max(minW, vp.X - margin)
-    local maxH = math.max(minH, vp.Y - margin)
-
-    local w = config.Width or DEFAULT_W
-    local h = config.Height or DEFAULT_H
-    if isMobile then
-        w = config.MobileWidth or math.min(w, maxW)
-        h = config.MobileHeight or math.min(h, maxH)
-    end
-
-    w = math.clamp(w, minW, maxW)
-    h = math.clamp(h, minH, maxH)
-    return w, h, minW, minH, isMobile
-end
-
-local function centerWindow(target, w, h)
-    target.Position = UDim2.new(0.5, -w / 2, 0.5, -h / 2)
+    return cam and cam.ViewportSize or Vector2.new(800, 600)
 end
 
 local function clampToScreen(target)
     local vp = viewportSize()
-    local w = target.AbsoluteSize.X
-    local h = target.AbsoluteSize.Y
-    local x = target.Position.X.Offset
-    local y = target.Position.Y.Offset
+    local w, h = target.AbsoluteSize.X, target.AbsoluteSize.Y
+    local x, y = target.Position.X.Offset, target.Position.Y.Offset
     if target.Position.X.Scale ~= 0 then x = (vp.X * target.Position.X.Scale) + x end
     if target.Position.Y.Scale ~= 0 then y = (vp.Y * target.Position.Y.Scale) + y end
     local nx = math.clamp(x, 4, math.max(4, vp.X - w - 4))
@@ -154,11 +114,8 @@ local function clampToScreen(target)
     target.Position = UDim2.new(0, nx, 0, ny)
 end
 
-local function makeDraggable(handle, target, clampEnabled)
-    local dragging = false
-    local dragStart, startPos
-
-    handle.Active = true
+local function makeDraggable(handle, target)
+    local dragging, dragStart, startPos = false, nil, nil
     handle.InputBegan:Connect(function(input)
         if isPress(input) then
             dragging = true
@@ -166,41 +123,27 @@ local function makeDraggable(handle, target, clampEnabled)
             startPos = target.Position
         end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
         if dragging and isMove(input) then
             local delta = input.Position - dragStart
-            target.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-            if clampEnabled ~= false then clampToScreen(target) end
+            target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            clampToScreen(target)
         end
     end)
-
     UserInputService.InputEnded:Connect(function(input)
-        if isPress(input) then
-            dragging = false
-            if clampEnabled ~= false then clampToScreen(target) end
-        end
+        if isPress(input) then dragging = false clampToScreen(target) end
     end)
 end
 
-local function makeResizable(resizeHandle, target, minW, minH)
-    local resizing = false
-    local resizeStart, startSize
-
-    resizeHandle.Active = true
-    resizeHandle.InputBegan:Connect(function(input)
+local function makeResizable(handle, target, minW, minH)
+    local resizing, resizeStart, startSize = false, nil, nil
+    handle.InputBegan:Connect(function(input)
         if isPress(input) then
             resizing = true
             resizeStart = input.Position
             startSize = target.Size
         end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
         if resizing and isMove(input) then
             local vp = viewportSize()
@@ -211,7 +154,6 @@ local function makeResizable(resizeHandle, target, minW, minH)
             clampToScreen(target)
         end
     end)
-
     UserInputService.InputEnded:Connect(function(input)
         if isPress(input) then resizing = false end
     end)
@@ -219,59 +161,47 @@ end
 
 function TryxLib:CreateWindow(config)
     config = config or {}
-    local title    = config.Title or "TryxLib"
-    local subtitle = config.Subtitle or ""
-    local icon     = config.Icon or "star"
-    local theme    = config.Theme or Theme
-
-    local w, h, minW, minH, isMobile = computeWindowSize(config)
+    local theme = config.Theme or Theme
+    local vp = viewportSize()
+    local isMobile = UserInputService.TouchEnabled and (vp.X <= 700 or not UserInputService.KeyboardEnabled)
+    
+    local w = math.clamp(config.Width or DEFAULT_W, isMobile and MIN_W_MOBILE or MIN_W_DESKTOP, vp.X - 20)
+    local h = math.clamp(config.Height or DEFAULT_H, isMobile and MIN_H_MOBILE or MIN_H_DESKTOP, vp.Y - 20)
     local sidebarW = config.SidebarWidth or (isMobile and SIDEBAR_W_MOBILE or SIDEBAR_W_DESKTOP)
 
     local gui = Instance.new("ScreenGui")
-    gui.Name           = "TryxLib_" .. title:gsub("%s", "")
-    gui.ResetOnSpawn   = false
+    gui.Name = "TryxLib_" .. (config.Title or "UI"):gsub("%s", "")
+    gui.ResetOnSpawn = false
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    gui.DisplayOrder   = config.DisplayOrder or 999
-    gui.IgnoreGuiInset = config.IgnoreGuiInset ~= false
-    gui.Parent         = (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+    gui.DisplayOrder = 999
+    gui.IgnoreGuiInset = true
+    gui.Parent = (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
 
     local win = Instance.new("Frame")
-    win.Name             = "Window"
-    win.Size             = UDim2.new(0, w, 0, 0)
+    win.Name = "Window"
+    win.Size = UDim2.new(0, w, 0, h)
+    win.Position = UDim2.new(0.5, -w/2, 0.5, -h/2)
     win.BackgroundColor3 = theme.Background
-    win.BorderSizePixel  = 0
+    win.BorderSizePixel = 0
     win.ClipsDescendants = true
-    win.Parent           = gui
-    centerWindow(win, w, h)
+    win.Parent = gui
     corner(win, UDim.new(0, 10))
     stroke(win, theme.ElementStroke, 1)
-
-    local shadow = Instance.new("ImageLabel")
-    shadow.Name                  = "Shadow"
-    shadow.Size                  = UDim2.new(1, 30, 1, 30)
-    shadow.Position              = UDim2.new(0, -15, 0, -15)
-    shadow.BackgroundTransparency = 1
-    shadow.Image                 = "rbxassetid://6014261993"
-    shadow.ImageColor3           = Color3.fromRGB(0, 0, 0)
-    shadow.ImageTransparency     = isMobile and 0.65 or 0.5
-    shadow.ScaleType             = Enum.ScaleType.Slice
-    shadow.SliceCenter           = Rect.new(49, 49, 450, 450)
-    shadow.ZIndex                = 0
-    shadow.Parent                = win
 
     local overlay = Instance.new("Frame")
     overlay.Name = "__TryxOverlay"
     overlay.Size = UDim2.fromScale(1, 1)
     overlay.BackgroundTransparency = 1
-    overlay.BorderSizePixel = 0
-    overlay.ClipsDescendants = false
     overlay.ZIndex = 9000
     overlay.Parent = gui
 
-    local topBar = newFrame(win, theme.TopBar, UDim2.new(1, 0, 0, TOPBAR_H))
+    local topBar = Instance.new("Frame")
     topBar.Name = "TopBar"
+    topBar.Size = UDim2.new(1, 0, 0, TOPBAR_H)
+    topBar.BackgroundColor3 = theme.TopBar
+    topBar.BorderSizePixel = 0
     topBar.ZIndex = 30
-    topBar.Active = true
+    topBar.Parent = win
 
     local topLayout = Instance.new("UIListLayout")
     topLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -280,138 +210,105 @@ function TryxLib:CreateWindow(config)
     topLayout.Parent = topBar
     padding(topBar, 0, 0, 14, 14)
 
-    local iconLabel = label(topBar, icon, theme.Accent, 14, Enum.Font.GothamBold)
-    iconLabel.Size = UDim2.new(0, 16, 1, 0)
-    iconLabel.Name = "Icon"
-    iconLabel.TextXAlignment = Enum.TextXAlignment.Center
+    local iconLbl = label(topBar, config.Icon or "★", theme.Accent, 14, Enum.Font.GothamBold)
+    iconLbl.Size = UDim2.new(0, 16, 1, 0)
+    iconLbl.TextXAlignment = Enum.TextXAlignment.Center
 
-    local titleLabel = label(topBar, title .. (subtitle ~= "" and "  -  " .. subtitle or ""), theme.TextPrimary, isMobile and 12 or 13, Enum.Font.GothamBold)
-    titleLabel.Size = UDim2.new(1, -120, 1, 0)
-    titleLabel.Name = "Title"
+    local titleLbl = label(topBar, config.Title or "TryxLib", theme.TextPrimary, isMobile and 12 or 13, Enum.Font.GothamBold)
+    titleLbl.Size = UDim2.new(1, -120, 1, 0)
 
-    local btnContainer = newFrame(topBar, Color3.fromRGB(0, 0, 0), UDim2.new(0, 60, 1, 0))
-    btnContainer.BackgroundTransparency = 1
-    btnContainer.Name = "Buttons"
+    local btnCont = Instance.new("Frame")
+    btnCont.Size = UDim2.new(0, 60, 1, 0)
+    btnCont.BackgroundTransparency = 1
+    btnCont.Parent = topBar
+    local btnLay = Instance.new("UIListLayout")
+    btnLay.FillDirection = Enum.FillDirection.Horizontal
+    btnLay.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    btnLay.VerticalAlignment = Enum.VerticalAlignment.Center
+    btnLay.Padding = UDim.new(0, 6)
+    btnLay.Parent = btnCont
 
-    local btnLayout = Instance.new("UIListLayout")
-    btnLayout.FillDirection = Enum.FillDirection.Horizontal
-    btnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-    btnLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    btnLayout.Padding = UDim.new(0, 6)
-    btnLayout.Parent = btnContainer
-
-    local function makeWinBtn(color)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0, isMobile and 16 or 14, 0, isMobile and 16 or 14)
-        btn.BackgroundColor3 = color
-        btn.Text = ""
-        btn.BorderSizePixel = 0
-        btn.AutoButtonColor = false
-        btn.Parent = btnContainer
-        corner(btn, UDim.new(1, 0))
-        return btn
+    local function makeBtn(col)
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(0, 14, 0, 14)
+        b.BackgroundColor3 = col
+        b.Text = ""
+        b.BorderSizePixel = 0
+        b.AutoButtonColor = false
+        b.Parent = btnCont
+        corner(b, UDim.new(1, 0))
+        return b
     end
+    local closeBtn = makeBtn(theme.Danger)
+    local minBtn = makeBtn(theme.Warning)
 
-    local closeBtn = makeWinBtn(theme.Danger)
-    local minimizeBtn = makeWinBtn(theme.Warning)
-
-    local sidebar = newFrame(win, theme.Sidebar, UDim2.new(0, sidebarW, 1, -TOPBAR_H), UDim2.new(0, 0, 0, TOPBAR_H))
+    local sidebar = Instance.new("Frame")
     sidebar.Name = "Sidebar"
+    sidebar.Size = UDim2.new(0, sidebarW, 1, -TOPBAR_H)
+    sidebar.Position = UDim2.new(0, 0, 0, TOPBAR_H)
+    sidebar.BackgroundColor3 = theme.Sidebar
+    sidebar.BorderSizePixel = 0
     sidebar.ZIndex = 20
-
-    local sideStroke = newFrame(sidebar, theme.ElementStroke, UDim2.new(0, 1, 1, 0), UDim2.new(1, 0, 0, 0))
-    sideStroke.Name = "Stroke"
+    sidebar.Parent = win
+    stroke(sidebar, theme.ElementStroke, 1)
 
     local tabList = Instance.new("ScrollingFrame")
-    tabList.Name = "TabList"
     tabList.Size = UDim2.new(1, 0, 1, -10)
     tabList.Position = UDim2.new(0, 0, 0, 8)
     tabList.BackgroundTransparency = 1
     tabList.ScrollBarThickness = 0
     tabList.CanvasSize = UDim2.new(0, 0, 0, 0)
     tabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    tabList.BorderSizePixel = 0
     tabList.Parent = sidebar
-
-    local tabListLayout = Instance.new("UIListLayout")
-    tabListLayout.Padding = UDim.new(0, 3)
-    tabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    tabListLayout.Parent = tabList
+    local tabLay = Instance.new("UIListLayout")
+    tabLay.Padding = UDim.new(0, 3)
+    tabLay.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    tabLay.Parent = tabList
     padding(tabList, 4, 4, 6, 6)
 
-    local contentArea = newFrame(win, theme.Background, UDim2.new(1, -sidebarW, 1, -TOPBAR_H), UDim2.new(0, sidebarW, 0, TOPBAR_H))
-    contentArea.Name = "Content"
-    contentArea.ClipsDescendants = false
+    local content = Instance.new("Frame")
+    content.Name = "Content"
+    content.Size = UDim2.new(1, -sidebarW, 1, -TOPBAR_H)
+    content.Position = UDim2.new(0, sidebarW, 0, TOPBAR_H)
+    content.BackgroundColor3 = theme.Background
+    content.BorderSizePixel = 0
+    content.Parent = win
 
-    local resizeHandle = Instance.new("TextButton")
-    resizeHandle.Name = "ResizeHandle"
-    resizeHandle.Size = UDim2.new(0, isMobile and 18 or 14, 0, isMobile and 18 or 14)
-    resizeHandle.Position = UDim2.new(1, -(isMobile and 18 or 14), 1, -(isMobile and 18 or 14))
-    resizeHandle.BackgroundColor3 = theme.ElementStroke
-    resizeHandle.Text = ""
-    resizeHandle.BorderSizePixel = 0
-    resizeHandle.AutoButtonColor = false
-    resizeHandle.ZIndex = 80
-    resizeHandle.Parent = win
-    corner(resizeHandle, UDim.new(0, 3))
+    -- Resize Handle discret (petit triangle en bas à droite)
+    local resizeH = Instance.new("ImageButton")
+    resizeH.Name = "Resize"
+    resizeH.Size = UDim2.new(0, 16, 0, 16)
+    resizeH.Position = UDim2.new(1, -16, 1, -16)
+    resizeH.BackgroundTransparency = 1
+    resizeH.Image = "rbxassetid://11419713314" -- Icône de resize discrète
+    resizeH.ImageColor3 = theme.TextDisabled
+    resizeH.ImageTransparency = 0.5
+    resizeH.ZIndex = 100
+    resizeH.Parent = win
 
-    for i = 1, 3 do
-        local dot = Instance.new("Frame")
-        dot.Size = UDim2.new(0, 2, 0, 2)
-        dot.Position = UDim2.new(0, 2 + (i - 1) * 4, 0, isMobile and 11 or 8)
-        dot.BackgroundColor3 = theme.TextDisabled
-        dot.BorderSizePixel = 0
-        dot.ZIndex = 81
-        dot.Parent = resizeHandle
-        corner(dot, UDim.new(1, 0))
-    end
+    makeDraggable(topBar, win)
+    makeResizable(resizeH, win, isMobile and MIN_W_MOBILE or MIN_W_DESKTOP, isMobile and MIN_H_MOBILE or MIN_H_DESKTOP)
 
-    makeDraggable(topBar, win, config.ClampToScreen ~= false)
-    if config.Resizable ~= false then
-        makeResizable(resizeHandle, win, minW, minH)
-    else
-        resizeHandle.Visible = false
-    end
-
-    local minimized = false
-    local prevSize = win.Size
-    minimizeBtn.MouseButton1Click:Connect(function()
+    local minimized, prevSize = false, win.Size
+    minBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
             prevSize = win.Size
             tween(win, { Size = UDim2.new(0, win.Size.X.Offset, 0, TOPBAR_H) }, 0.2)
-            contentArea.Visible = false
-            sidebar.Visible = false
-            resizeHandle.Visible = false
+            content.Visible, sidebar.Visible, resizeH.Visible = false, false, false
         else
             tween(win, { Size = prevSize }, 0.2)
-            contentArea.Visible = true
-            sidebar.Visible = true
-            resizeHandle.Visible = config.Resizable ~= false
+            content.Visible, sidebar.Visible, resizeH.Visible = true, true, true
         end
     end)
-
     closeBtn.MouseButton1Click:Connect(function()
         tween(win, { Size = UDim2.new(0, win.Size.X.Offset, 0, 0) }, 0.15)
-        task.wait(0.15)
-        gui:Destroy()
+        task.wait(0.15) gui:Destroy()
     end)
 
     local Window = {}
     local tabs = {}
     local activePage = nil
-
-    local function setActiveTab(page, tabBtn)
-        if activePage then activePage.Visible = false end
-        activePage = page
-        page.Visible = true
-        for _, t in ipairs(tabs) do
-            local isActive = t.btn == tabBtn
-            tween(t.btn, { BackgroundColor3 = isActive and theme.TabActive or theme.TabInactive }, 0.12)
-            t.accent.Visible = isActive
-            t.titleLbl.TextColor3 = isActive and theme.TextPrimary or theme.TextSecondary
-        end
-    end
 
     function Window:Tab(cfg)
         cfg = cfg or {}
@@ -419,7 +316,6 @@ function TryxLib:CreateWindow(config)
         local tabIcon = cfg.Icon or ""
 
         local tabBtn = Instance.new("TextButton")
-        tabBtn.Name = "Tab_" .. tabTitle
         tabBtn.Size = UDim2.new(1, 0, 0, isMobile and 34 or 36)
         tabBtn.BackgroundColor3 = theme.TabInactive
         tabBtn.Text = ""
@@ -428,97 +324,69 @@ function TryxLib:CreateWindow(config)
         tabBtn.Parent = tabList
         corner(tabBtn, UDim.new(0, 6))
 
-        local accentBar = Instance.new("Frame")
-        accentBar.Name = "Accent"
-        accentBar.Size = UDim2.new(0, 3, 0.6, 0)
-        accentBar.Position = UDim2.new(0, 0, 0.2, 0)
-        accentBar.BackgroundColor3 = theme.TabStroke
-        accentBar.BorderSizePixel = 0
-        accentBar.Visible = false
-        accentBar.Parent = tabBtn
-        corner(accentBar, UDim.new(0, 2))
+        local accent = Instance.new("Frame")
+        accent.Size = UDim2.new(0, 3, 0.6, 0)
+        accent.Position = UDim2.new(0, 0, 0.2, 0)
+        accent.BackgroundColor3 = theme.TabStroke
+        accent.Visible = false
+        accent.Parent = tabBtn
+        corner(accent, UDim.new(0, 2))
 
-        local tabRowLayout = Instance.new("UIListLayout")
-        tabRowLayout.FillDirection = Enum.FillDirection.Horizontal
-        tabRowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-        tabRowLayout.Padding = UDim.new(0, isMobile and 5 or 7)
-        tabRowLayout.Parent = tabBtn
+        local rowLay = Instance.new("UIListLayout")
+        rowLay.FillDirection = Enum.FillDirection.Horizontal
+        rowLay.VerticalAlignment = Enum.VerticalAlignment.Center
+        rowLay.Padding = UDim.new(0, 8)
+        rowLay.Parent = tabBtn
         padding(tabBtn, 0, 0, 10, 8)
 
-        local iconLbl = label(tabBtn, tabIcon, theme.Accent, 12, Enum.Font.GothamMedium)
-        iconLbl.Size = UDim2.new(0, 14, 1, 0)
-        iconLbl.TextXAlignment = Enum.TextXAlignment.Center
-        iconLbl.Visible = (tabIcon ~= "")
+        local ic = label(tabBtn, tabIcon, theme.Accent, 12, Enum.Font.GothamMedium)
+        ic.Size = UDim2.new(0, 14, 1, 0)
+        ic.Visible = (tabIcon ~= "")
 
-        local titleLbl = label(tabBtn, tabTitle, theme.TextSecondary, isMobile and 11 or 12, Enum.Font.GothamMedium)
-        titleLbl.Size = UDim2.new(1, -20, 1, 0)
+        local tl = label(tabBtn, tabTitle, theme.TextSecondary, isMobile and 11 or 12, Enum.Font.GothamMedium)
+        tl.Size = UDim2.new(1, -20, 1, 0)
 
         local page = Instance.new("ScrollingFrame")
-        page.Name = "Page_" .. tabTitle
         page.Size = UDim2.fromScale(1, 1)
         page.BackgroundTransparency = 1
-        page.ScrollBarThickness = 3
+        page.ScrollBarThickness = 2
         page.ScrollBarImageColor3 = theme.ScrollBar
         page.CanvasSize = UDim2.new(0, 0, 0, 0)
         page.AutomaticCanvasSize = Enum.AutomaticSize.Y
         page.BorderSizePixel = 0
         page.Visible = false
-        page.ClipsDescendants = false
-        page.Parent = contentArea
-
-        local pageLayout = Instance.new("UIListLayout")
-        pageLayout.Padding = UDim.new(0, ELEMENT_PAD)
-        pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-        pageLayout.Parent = page
+        page.Parent = content
+        local pageLay = Instance.new("UIListLayout")
+        pageLay.Padding = UDim.new(0, 6)
+        pageLay.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        pageLay.Parent = page
         padding(page, 10, 10, 10, 10)
 
-        local tabEntry = { btn = tabBtn, accent = accentBar, titleLbl = titleLbl, page = page }
-        table.insert(tabs, tabEntry)
+        local entry = { btn = tabBtn, accent = accent, title = tl, page = page }
+        table.insert(tabs, entry)
 
-        tabBtn.MouseEnter:Connect(function()
-            if accentBar.Visible then return end
-            tween(tabBtn, { BackgroundColor3 = theme.ElementHover }, 0.1)
-        end)
-        tabBtn.MouseLeave:Connect(function()
-            if accentBar.Visible then return end
-            tween(tabBtn, { BackgroundColor3 = theme.TabInactive }, 0.1)
-        end)
-        tabBtn.MouseButton1Click:Connect(function()
-            setActiveTab(page, tabBtn)
-        end)
-
-        if #tabs == 1 then setActiveTab(page, tabBtn) end
-
-        local Tab = {}
-        Tab._page = page
-        Tab._layout = pageLayout
-        Tab._theme = theme
-        Tab._gui = gui
-        Tab._window = win
-        Tab._overlay = overlay
-        Tab._isMobile = isMobile
-
-        function Tab:_addElement(elem)
-            elem.Parent = page
+        local function activate()
+            if activePage then activePage.Visible = false end
+            activePage = page
+            page.Visible = true
+            for _, t in ipairs(tabs) do
+                local active = (t.btn == tabBtn)
+                tween(t.btn, { BackgroundColor3 = active and theme.TabActive or theme.TabInactive }, 0.12)
+                t.accent.Visible = active
+                t.title.TextColor3 = active and theme.TextPrimary or theme.TextSecondary
+            end
         end
 
+        tabBtn.MouseButton1Click:Connect(activate)
+        if #tabs == 1 then activate() end
+
+        local Tab = { _page = page, _theme = theme, _gui = gui, _window = win, _overlay = overlay, _isMobile = isMobile }
+        function Tab:_addElement(e) e.Parent = page end
         return Tab
     end
 
-    function Window:Notify(cfg)
-        if TryxLib._notify then TryxLib._notify(gui, cfg, theme) end
-    end
-
-    function Window:Destroy()
-        gui:Destroy()
-    end
-
-    function Window:GetGui() return gui end
-    function Window:GetWindowFrame() return win end
-    function Window:IsMobile() return isMobile end
-
-    tween(win, { Size = UDim2.new(0, w, 0, h) }, 0.25)
-
+    function Window:Notify(cfg) if TryxLib._notify then TryxLib._notify(gui, cfg, theme) end end
+    function Window:Destroy() gui:Destroy() end
     return Window
 end
 
