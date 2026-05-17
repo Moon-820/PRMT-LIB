@@ -737,57 +737,59 @@ function Elements.Dropdown(tab, cfg)
     return obj
 end
 
--- ─── PARAGRAPH ────────────────────────────────────────────────────────────────
-function Elements.Paragraph(tab, cfg)
+function Tab:Paragraph(cfg)
     cfg = cfg or {}
-    local theme = tab._theme
-    local title = cfg.Title or ""
-    local desc  = cfg.Desc  or ""
+    local hasBar = cfg.AccentBar ~= nil
 
-    local f = Instance.new("Frame")
-    f.Size             = UDim2.new(1, 0, 0, 0)
-    f.AutomaticSize    = Enum.AutomaticSize.Y
-    f.BackgroundColor3 = cfg.Color or theme.Element
-    f.BackgroundTransparency = cfg.Transparency or 0
-    f.BorderSizePixel  = 0
-    corner(f)
-    stroke(f, theme.ElementStroke, 1)
-    padding(f, 10, 10, 12, 12)
+    local outer = Instance.new("Frame")
+    outer.Size             = UDim2.new(1, 0, 0, 0)
+    outer.AutomaticSize    = Enum.AutomaticSize.Y
+    outer.BackgroundColor3 = cfg.Color or theme.Element
+    outer.BorderSizePixel  = 0
+    if cfg.Transparency then outer.BackgroundTransparency = cfg.Transparency end
+    corner(outer, CORNER_EL)
+    stroke(outer, theme.ElementStroke, 1)
 
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 4)
-    layout.Parent  = f
-
-    if title ~= "" then
-        local t = Instance.new("TextLabel")
-        t.Size               = UDim2.new(1, 0, 0, 0)
-        t.AutomaticSize      = Enum.AutomaticSize.Y
-        t.BackgroundTransparency = 1
-        t.Text               = title
-        t.TextColor3         = theme.TextPrimary
-        t.TextSize           = 13
-        t.Font               = Enum.Font.GothamBold
-        t.TextXAlignment     = Enum.TextXAlignment.Left
-        t.TextWrapped        = true
-        t.Parent             = f
+    if hasBar then
+        local abar = Instance.new("Frame")
+        abar.Size             = UDim2.new(0, 3, 1, 0)
+        abar.Position         = UDim2.new(0, 0, 0, 0)
+        abar.BackgroundColor3 = cfg.AccentBar
+        abar.BorderSizePixel  = 0
+        corner(abar, UDim.new(0, 2))
+        abar.Parent = outer
     end
 
-    if desc ~= "" then
-        local d = Instance.new("TextLabel")
-        d.Size               = UDim2.new(1, 0, 0, 0)
-        d.AutomaticSize      = Enum.AutomaticSize.Y
-        d.BackgroundTransparency = 1
-        d.Text               = desc
-        d.TextColor3         = theme.TextSecondary
-        d.TextSize           = 12
-        d.Font               = Enum.Font.Gotham
-        d.TextXAlignment     = Enum.TextXAlignment.Left
-        d.TextWrapped        = true
-        d.Parent             = f
+    local inner = Instance.new("Frame")
+    inner.Size                = UDim2.new(1, hasBar and -6 or 0, 0, 0)
+    inner.Position            = UDim2.new(0, hasBar and 6  or 0, 0, 0)
+    inner.AutomaticSize       = Enum.AutomaticSize.Y
+    inner.BackgroundTransparency = 1
+    inner.BorderSizePixel     = 0
+    pad(inner, 10, 10, 14, 14)
+    inner.Parent = outer
+
+    local lay = Instance.new("UIListLayout")
+    lay.Padding = UDim.new(0, 5)
+    lay.Parent  = inner
+
+    if cfg.Title and cfg.Title ~= "" then
+        local tl = lbl(inner, cfg.Title, theme.TextPrimary, 13, Enum.Font.GothamBold)
+        tl.Size           = UDim2.new(1, 0, 0, 0)
+        tl.AutomaticSize  = Enum.AutomaticSize.Y
+        tl.TextWrapped    = true
+        tl.TextYAlignment = Enum.TextYAlignment.Top
+    end
+    if cfg.Desc and cfg.Desc ~= "" then
+        local dl = lbl(inner, cfg.Desc, theme.TextSecondary, 12, Enum.Font.Gotham)
+        dl.Size           = UDim2.new(1, 0, 0, 0)
+        dl.AutomaticSize  = Enum.AutomaticSize.Y
+        dl.TextWrapped    = true
+        dl.TextYAlignment = Enum.TextYAlignment.Top
     end
 
-    tab:_addElement(f)
-    return f
+    outer.Parent = page
+    return outer
 end
 
 -- ─── DIVIDER ──────────────────────────────────────────────────────────────────
