@@ -1,4 +1,3 @@
-
 local TryxLib = {}
 TryxLib.__index = TryxLib
 
@@ -295,19 +294,29 @@ local function makeResizable(handle, target)
 end
 
 local keyNames = {
-    [Enum.KeyCode.LeftControl]="L-CTRL",[Enum.KeyCode.RightControl]="R-CTRL",
-    [Enum.KeyCode.LeftShift]="L-SHIFT",[Enum.KeyCode.RightShift]="R-SHIFT",
-    [Enum.KeyCode.LeftAlt]="L-ALT",[Enum.KeyCode.RightAlt]="R-ALT",
-    [Enum.KeyCode.Return]="ENTER",[Enum.KeyCode.BackSpace]="BKSP",
-    [Enum.KeyCode.Space]="SPACE",[Enum.KeyCode.Tab]="TAB",
-    [Enum.KeyCode.Delete]="DEL",[Enum.KeyCode.Home]="HOME",
-    [Enum.KeyCode.End]="END",[Enum.KeyCode.Up]="↑",
-    [Enum.KeyCode.Down]="↓",[Enum.KeyCode.Left]="←",[Enum.KeyCode.Right]="→",
+    [Enum.KeyCode.LeftControl]  = "L-CTRL",
+    [Enum.KeyCode.RightControl] = "R-CTRL",
+    [Enum.KeyCode.LeftShift]    = "L-SHIFT",
+    [Enum.KeyCode.RightShift]   = "R-SHIFT",
+    [Enum.KeyCode.LeftAlt]      = "L-ALT",
+    [Enum.KeyCode.RightAlt]     = "R-ALT",
+    [Enum.KeyCode.Return]       = "ENTER",
+    [Enum.KeyCode.Backspace]    = "BKSP",
+    [Enum.KeyCode.Space]        = "SPACE",
+    [Enum.KeyCode.Tab]          = "TAB",
+    [Enum.KeyCode.Delete]       = "DEL",
+    [Enum.KeyCode.Home]         = "HOME",
+    [Enum.KeyCode.End]          = "END",
+    [Enum.KeyCode.Up]           = "↑",
+    [Enum.KeyCode.Down]         = "↓",
+    [Enum.KeyCode.Left]         = "←",
+    [Enum.KeyCode.Right]        = "→",
     [Enum.KeyCode.F1]="F1",[Enum.KeyCode.F2]="F2",[Enum.KeyCode.F3]="F3",
     [Enum.KeyCode.F4]="F4",[Enum.KeyCode.F5]="F5",[Enum.KeyCode.F6]="F6",
     [Enum.KeyCode.F7]="F7",[Enum.KeyCode.F8]="F8",[Enum.KeyCode.F9]="F9",
     [Enum.KeyCode.F10]="F10",[Enum.KeyCode.F11]="F11",[Enum.KeyCode.F12]="F12",
 }
+
 local function keyName(kc) return keyNames[kc] or kc.Name:upper() end
 
 local notifyCount = 0
