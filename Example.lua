@@ -9,8 +9,8 @@ local Window = Tryx:CreateWindow({
 local Main = Window:Tab({ Title = "Main", Icon = "⚡" })
 
 Main:ProfileFrame({
-    Name     = "RonixHub_Owner",
-    Subtitle = "RonixHub_Owner · Hidden - Fisch",
+    Name     = "@...",
+    Subtitle = "f",
     UserId   = 0,
 })
 
