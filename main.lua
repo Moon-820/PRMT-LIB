@@ -309,7 +309,7 @@ local keyNames = {
     [Enum.KeyCode.LeftControl]="L-CTRL",[Enum.KeyCode.RightControl]="R-CTRL",
     [Enum.KeyCode.LeftShift]="L-SHIFT",[Enum.KeyCode.RightShift]="R-SHIFT",
     [Enum.KeyCode.LeftAlt]="L-ALT",[Enum.KeyCode.RightAlt]="R-ALT",
-    [Enum.KeyCode.Return]="ENTER",[Enum.KeyCode.BackSpace]="BKSP",
+    [Enum.KeyCode.Return]="ENTER",[Enum.KeyCode.Backspace]="BKSP",
     [Enum.KeyCode.Space]="SPACE",[Enum.KeyCode.Tab]="TAB",
     [Enum.KeyCode.Delete]="DEL",[Enum.KeyCode.Home]="HOME",
     [Enum.KeyCode.End]="END",[Enum.KeyCode.Up]="↑",
