@@ -301,7 +301,6 @@ local keyNames = {
     [Enum.KeyCode.LeftAlt]      = "L-ALT",
     [Enum.KeyCode.RightAlt]     = "R-ALT",
     [Enum.KeyCode.Return]       = "ENTER",
-    [Enum.KeyCode.Backspace]    = "BKSP",
     [Enum.KeyCode.Space]        = "SPACE",
     [Enum.KeyCode.Tab]          = "TAB",
     [Enum.KeyCode.Delete]       = "DEL",
