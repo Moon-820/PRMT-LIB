@@ -1,3 +1,4 @@
+
 local TryxLib = {}
 TryxLib.__index = TryxLib
 
@@ -7,9 +8,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService       = game:GetService("RunService")
 local LocalPlayer      = Players.LocalPlayer
 
--- ══════════════════════════════════════════════════════════════════
---  THEMES
--- ══════════════════════════════════════════════════════════════════
 local Themes = {}
 
 Themes.Default = {
@@ -132,9 +130,6 @@ Themes.Midnight = {
     ShadowColor    = Color3.fromRGB(0, 0, 8),
 }
 
--- ══════════════════════════════════════════════════════════════════
---  CONSTANTS
--- ══════════════════════════════════════════════════════════════════
 local SIDEBAR_W   = 168
 local TOPBAR_H    = 44
 local MIN_W       = 500
@@ -150,9 +145,6 @@ local ANIM_FAST   = 0.10
 local ANIM_MED    = 0.16
 local ANIM_SLOW   = 0.25
 
--- ══════════════════════════════════════════════════════════════════
---  UTILS
--- ══════════════════════════════════════════════════════════════════
 local function tw(obj, props, t, style, dir)
     TweenService:Create(obj,
         TweenInfo.new(t or ANIM_MED, style or Enum.EasingStyle.Quart, dir or Enum.EasingDirection.Out),
@@ -302,14 +294,11 @@ local function makeResizable(handle, target)
     end)
 end
 
--- ══════════════════════════════════════════════════════════════════
---  KEYBIND NAMES
--- ══════════════════════════════════════════════════════════════════
 local keyNames = {
     [Enum.KeyCode.LeftControl]="L-CTRL",[Enum.KeyCode.RightControl]="R-CTRL",
     [Enum.KeyCode.LeftShift]="L-SHIFT",[Enum.KeyCode.RightShift]="R-SHIFT",
     [Enum.KeyCode.LeftAlt]="L-ALT",[Enum.KeyCode.RightAlt]="R-ALT",
-    [Enum.KeyCode.Return]="ENTER",[Enum.KeyCode.Backspace]="BKSP",
+    [Enum.KeyCode.Return]="ENTER",[Enum.KeyCode.BackSpace]="BKSP",
     [Enum.KeyCode.Space]="SPACE",[Enum.KeyCode.Tab]="TAB",
     [Enum.KeyCode.Delete]="DEL",[Enum.KeyCode.Home]="HOME",
     [Enum.KeyCode.End]="END",[Enum.KeyCode.Up]="↑",
@@ -321,9 +310,6 @@ local keyNames = {
 }
 local function keyName(kc) return keyNames[kc] or kc.Name:upper() end
 
--- ══════════════════════════════════════════════════════════════════
---  NOTIFICATION SYSTEM
--- ══════════════════════════════════════════════════════════════════
 local notifyCount = 0
 local MAX_NOTIFY  = 5
 local notifyGui   = nil
@@ -432,9 +418,6 @@ local function doNotify(cfg, theme)
     cb.MouseButton1Click:Connect(dismiss)
 end
 
--- ══════════════════════════════════════════════════════════════════
---  BASE ELEMENT BUILDER
--- ══════════════════════════════════════════════════════════════════
 local function baseEl(theme, cfg, h)
     local height = h or ELEMENT_H
     if cfg.Desc and cfg.Desc ~= "" then height = height + 16 end
@@ -477,12 +460,8 @@ local function titleDesc(parent, theme, cfg, offsetR, y)
     return tl
 end
 
--- ══════════════════════════════════════════════════════════════════
---  INJECT ALL ELEMENTS
--- ══════════════════════════════════════════════════════════════════
 local function injectElements(Tab, theme, page)
 
-    -- ── BUTTON ────────────────────────────────────────────────
     function Tab:Button(cfg)
         cfg = cfg or {}
         local f = baseEl(theme, cfg)
@@ -529,7 +508,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── TOGGLE ────────────────────────────────────────────────
     function Tab:Toggle(cfg)
         cfg = cfg or {}
         local toggleType = cfg.Type  or "Default"
@@ -599,7 +577,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── INPUT ─────────────────────────────────────────────────
     function Tab:Input(cfg)
         cfg = cfg or {}
         local multiline = cfg.MultiLine or false
@@ -665,7 +642,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── SLIDER ────────────────────────────────────────────────
     function Tab:Slider(cfg)
         cfg = cfg or {}
         local mn       = cfg.Min    or 0
@@ -793,7 +769,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── DROPDOWN ──────────────────────────────────────────────
     function Tab:Dropdown(cfg)
         cfg = cfg or {}
         local values   = cfg.Values  or {}
@@ -826,16 +801,22 @@ local function injectElements(Tab, theme, page)
         chev.Size     = UDim2.new(0,18,1,0)
         chev.Position = UDim2.new(1,-20,0,0)
 
-        -- List container avec ZIndex élevé pour passer au-dessus de tout
-        local listCont = frame(f, theme.Element, UDim2.new(0,104,0,0))
-        listCont.Position         = UDim2.new(1,-106,0,ELEMENT_H+2)
+        local listCont = frame(nil, theme.Element, UDim2.new(0,104,0,0))
         listCont.ClipsDescendants = true
-        listCont.ZIndex           = 100
+        listCont.ZIndex           = 999
         corner(listCont, CORNER_EL)
         stroke(listCont, theme.ElementStroke, 1)
 
-        -- Important: mettre le listCont dans le gui parent pour éviter le clipping
-        -- On le repositionne via un conteneur global
+        local function positionList()
+            local sg = Tab._gui
+            if not sg then return end
+            listCont.Parent = sg
+            local abs = selBox.AbsolutePosition
+            local sz  = selBox.AbsoluteSize
+            listCont.Position = UDim2.new(0, abs.X, 0, abs.Y + sz.Y + 4)
+            listCont.Size     = UDim2.new(0, 104, 0, 0)
+        end
+
         local listScroll = Instance.new("ScrollingFrame")
         listScroll.Size                = UDim2.fromScale(1,1)
         listScroll.BackgroundTransparency = 1
@@ -844,7 +825,7 @@ local function injectElements(Tab, theme, page)
         listScroll.CanvasSize          = UDim2.new(0,0,0,0)
         listScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
         listScroll.BorderSizePixel     = 0
-        listScroll.ZIndex              = 101
+        listScroll.ZIndex              = 1000
         listScroll.Parent              = listCont
         pad(listScroll, 4,4,4,4)
 
@@ -900,8 +881,8 @@ local function injectElements(Tab, theme, page)
                         value = v
                         selLbl.Text = v
                         open = false
-                        local ih = math.min(#values,6)*30+8
                         tw(listCont,{Size=UDim2.new(0,104,0,0)})
+                        task.delay(0.15, function() listCont.Parent=nil end)
                         tw(chev,{Rotation=0})
                         buildList()
                         task.spawn(function() pcall(cfg.Callback or function()end, value) end)
@@ -924,7 +905,13 @@ local function injectElements(Tab, theme, page)
             if disabled then return end
             open = not open
             local ih = math.min(#values,6)*30+8
-            tw(listCont,{Size=UDim2.new(0,104,0,open and ih or 0)})
+            if open then
+                positionList()
+                tw(listCont,{Size=UDim2.new(0,104,0,ih)})
+            else
+                tw(listCont,{Size=UDim2.new(0,104,0,0)})
+                task.delay(0.15, function() if not open then listCont.Parent=nil end end)
+            end
             tw(chev,{Rotation=open and 180 or 0})
         end)
 
@@ -939,7 +926,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── PARAGRAPH ─────────────────────────────────────────────
     function Tab:Paragraph(cfg)
         cfg = cfg or {}
 
@@ -982,7 +968,6 @@ local function injectElements(Tab, theme, page)
         return f
     end
 
-    -- ── DIVIDER ───────────────────────────────────────────────
     function Tab:Divider(cfg)
         cfg = cfg or {}
         local f = frame(page, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,20))
@@ -1006,7 +991,6 @@ local function injectElements(Tab, theme, page)
         return f
     end
 
-    -- ── SPACE ─────────────────────────────────────────────────
     function Tab:Space(cfg)
         cfg = cfg or {}
         local f = frame(page, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,cfg.Height or 8))
@@ -1015,7 +999,6 @@ local function injectElements(Tab, theme, page)
         return f
     end
 
-    -- ── KEYBIND ───────────────────────────────────────────────
     function Tab:Keybind(cfg)
         cfg = cfg or {}
         local value     = cfg.Key      or Enum.KeyCode.F
@@ -1080,7 +1063,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── KEYBIND BUTTON ────────────────────────────────────────
     function Tab:KeybindButton(cfg)
         cfg = cfg or {}
         local value     = cfg.Key       or Enum.KeyCode.F
@@ -1153,7 +1135,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── CARD ──────────────────────────────────────────────────
     function Tab:Card(cfg)
         cfg = cfg or {}
         local h = cfg.Height or 78
@@ -1214,7 +1195,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── CARD ROW ──────────────────────────────────────────────
     function Tab:CardRow(cards)
         cards = cards or {}
         local rowH = 0
@@ -1269,7 +1249,6 @@ local function injectElements(Tab, theme, page)
         return objs
     end
 
-    -- ── PROFILE FRAME ─────────────────────────────────────────
     function Tab:ProfileFrame(cfg)
         cfg = cfg or {}
         local userId   = cfg.UserId   or LocalPlayer.UserId
@@ -1283,12 +1262,10 @@ local function injectElements(Tab, theme, page)
         corner(f, CORNER_EL)
         stroke(f, theme.CardStroke, 1)
 
-        -- Header accent strip
         local strip = frame(f, theme.Accent, UDim2.new(1,0,0,3))
         strip.BackgroundTransparency = 0.75
         corner(strip, UDim.new(0,2))
 
-        -- Avatar container
         local avBg = frame(f, theme.ElementStroke, UDim2.new(0,52,0,52))
         avBg.Position = UDim2.new(0,14,0.5,-26)
         corner(avBg, UDim.new(1,0))
@@ -1304,14 +1281,12 @@ local function injectElements(Tab, theme, page)
         corner(av, UDim.new(1,0))
         av.Parent = avBg
 
-        -- Status dot
         local dot = frame(avBg, theme.Success, UDim2.new(0,11,0,11))
         dot.Position  = UDim2.new(1,-11,1,-11)
         dot.ZIndex    = 3
         corner(dot, UDim.new(1,0))
         stroke(dot, theme.ProfileBg, 2)
 
-        -- Name
         local nameLbl = lbl(f, username, theme.TextPrimary, 13, Enum.Font.GothamBold)
         nameLbl.Size     = UDim2.new(1,-120,0,17)
         nameLbl.Position = UDim2.new(0,74,0,14)
@@ -1320,7 +1295,6 @@ local function injectElements(Tab, theme, page)
         descLbl.Size     = UDim2.new(1,-120,0,14)
         descLbl.Position = UDim2.new(0,74,0,32)
 
-        -- Badges
         if #badges>0 then
             local badgeRow = frame(f, Color3.fromRGB(0,0,0), UDim2.new(1,-120,0,17))
             badgeRow.Position           = UDim2.new(0,74,0,48)
@@ -1344,7 +1318,6 @@ local function injectElements(Tab, theme, page)
             end
         end
 
-        -- Role
         if cfg.Role then
             local rl = lbl(f, cfg.Role, theme.Accent, 10, Enum.Font.GothamBold, Enum.TextXAlignment.Right)
             rl.Size     = UDim2.new(0,90,0,16)
@@ -1355,7 +1328,6 @@ local function injectElements(Tab, theme, page)
         return {_frame=f}
     end
 
-    -- ── BADGE ─────────────────────────────────────────────────
     function Tab:Badge(cfg)
         cfg = cfg or {}
         local wrapper = frame(page, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,34))
@@ -1383,7 +1355,6 @@ local function injectElements(Tab, theme, page)
         return {_frame=wrapper}
     end
 
-    -- ── COLOR PICKER ──────────────────────────────────────────
     function Tab:ColorPicker(cfg)
         cfg = cfg or {}
         local value    = cfg.Value    or Color3.fromRGB(255,255,255)
@@ -1512,7 +1483,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── LABEL ─────────────────────────────────────────────────
     function Tab:Label(cfg)
         cfg = cfg or {}
         local f = frame(page, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,cfg.Height or 22))
@@ -1530,7 +1500,6 @@ local function injectElements(Tab, theme, page)
         return obj
     end
 
-    -- ── SECTION (titre de groupe) ─────────────────────────────
     function Tab:Section(cfg)
         cfg = cfg or {}
         local f = frame(page, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,26))
@@ -1550,9 +1519,6 @@ local function injectElements(Tab, theme, page)
 
 end
 
--- ══════════════════════════════════════════════════════════════════
---  CREATE WINDOW
--- ══════════════════════════════════════════════════════════════════
 function TryxLib:CreateWindow(config)
     config = config or {}
 
@@ -1563,7 +1529,6 @@ function TryxLib:CreateWindow(config)
     local winSize   = config.Size     or Vector2.new(DEFAULT_W, DEFAULT_H)
     local toggleKey = config.ToggleKey or Enum.KeyCode.RightAlt
 
-    -- ScreenGui
     local gui = Instance.new("ScreenGui")
     gui.Name            = "TryxLib_"..title:gsub("%s","")
     gui.ResetOnSpawn    = false
@@ -1572,7 +1537,6 @@ function TryxLib:CreateWindow(config)
     gui.IgnoreGuiInset  = true
     gui.Parent          = (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
 
-    -- Fenêtre
     local win = frame(gui, theme.Background,
         UDim2.new(0,winSize.X,0,0),
         UDim2.new(0.5,-winSize.X/2,0.5,-winSize.Y/2)
@@ -1583,17 +1547,14 @@ function TryxLib:CreateWindow(config)
     stroke(win, theme.ElementStroke, 1)
     shadow(win)
 
-    -- TopBar
     local topBar = frame(win, theme.TopBar, UDim2.new(1,0,0,TOPBAR_H))
     topBar.ZIndex = 4
     corner(topBar, CORNER_WIN)
 
-    -- Fix coins bas topbar
     local topFix = frame(win, theme.TopBar, UDim2.new(1,0,0,TOPBAR_H/2))
     topFix.Position = UDim2.new(0,0,0,TOPBAR_H/2)
     topFix.ZIndex   = 3
 
-    -- Séparateur bas topbar
     local topSep = frame(win, theme.ElementStroke, UDim2.new(1,0,0,1))
     topSep.Position = UDim2.new(0,0,0,TOPBAR_H)
     topSep.ZIndex   = 5
@@ -1605,11 +1566,9 @@ function TryxLib:CreateWindow(config)
     topLay.Parent            = topBar
     pad(topBar,0,0,14,14)
 
-    -- Icon
     local iconLbl = lbl(topBar, icon, theme.Accent, 15, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
     iconLbl.Size = UDim2.new(0,18,1,0)
 
-    -- Title container
     local titleCont = frame(topBar, Color3.fromRGB(0,0,0), UDim2.new(1,-100,1,0))
     titleCont.BackgroundTransparency = 1
 
@@ -1623,7 +1582,6 @@ function TryxLib:CreateWindow(config)
         subLbl.Position = UDim2.new(0,0,0,23)
     end
 
-    -- Window buttons
     local btnCont = frame(topBar, Color3.fromRGB(0,0,0), UDim2.new(0,60,1,0))
     btnCont.BackgroundTransparency = 1
     local btnLay = Instance.new("UIListLayout")
@@ -1651,7 +1609,6 @@ function TryxLib:CreateWindow(config)
     local minBtn   = winBtn(theme.Warning,  theme.WarningDark)
     local maxBtn   = winBtn(theme.Success,  theme.SuccessDark)
 
-    -- Sidebar
     local sidebar = frame(win, theme.Sidebar,
         UDim2.new(0,SIDEBAR_W,1,-TOPBAR_H),
         UDim2.new(0,0,0,TOPBAR_H)
@@ -1661,7 +1618,6 @@ function TryxLib:CreateWindow(config)
     local sideSep = frame(sidebar, theme.ElementStroke, UDim2.new(0,1,1,0))
     sideSep.Position = UDim2.new(1,0,0,0)
 
-    -- Version label bas sidebar
     local verLbl = lbl(sidebar, "TryxLib v2.0", theme.TextDisabled, 9, Enum.Font.Gotham, Enum.TextXAlignment.Center)
     verLbl.Size     = UDim2.new(1,0,0,16)
     verLbl.Position = UDim2.new(0,0,1,-18)
@@ -1683,7 +1639,6 @@ function TryxLib:CreateWindow(config)
     tabLay.Parent              = tabScroll
     pad(tabScroll,6,6,6,6)
 
-    -- Content
     local content = frame(win, theme.Background,
         UDim2.new(1,-SIDEBAR_W,1,-TOPBAR_H),
         UDim2.new(0,SIDEBAR_W,0,TOPBAR_H)
@@ -1691,7 +1646,6 @@ function TryxLib:CreateWindow(config)
     content.Name             = "Content"
     content.ClipsDescendants = true
 
-    -- Resize handle
     local resizeH = Instance.new("TextButton")
     resizeH.Size             = UDim2.new(0,16,0,16)
     resizeH.Position         = UDim2.new(1,-16,1,-16)
@@ -1716,23 +1670,19 @@ function TryxLib:CreateWindow(config)
     makeDraggable(topBar, win)
     makeResizable(resizeH, win)
 
-    -- State
     local visible   = true
     local minimized = false
     local maximized = false
     local prevSize  = UDim2.new(0,winSize.X,0,winSize.Y)
     local prevPos   = win.Position
 
-    -- Apparition
     tw(win, {Size=UDim2.new(0,winSize.X,0,winSize.Y)}, ANIM_SLOW)
 
-    -- Close
     closeBtn.MouseButton1Click:Connect(function()
         tw(win,{Size=UDim2.new(0,win.Size.X.Offset,0,0),BackgroundTransparency=1},ANIM_FAST)
         task.wait(ANIM_FAST+0.06); gui:Destroy()
     end)
 
-    -- Minimize
     minBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
@@ -1746,7 +1696,6 @@ function TryxLib:CreateWindow(config)
         end
     end)
 
-    -- Maximize
     maxBtn.MouseButton1Click:Connect(function()
         maximized = not maximized
         if maximized then
@@ -1758,7 +1707,6 @@ function TryxLib:CreateWindow(config)
         end
     end)
 
-    -- Toggle key
     UserInputService.InputBegan:Connect(function(i,gp)
         if gp then return end
         if i.KeyCode==toggleKey then
@@ -1773,7 +1721,6 @@ function TryxLib:CreateWindow(config)
         end
     end)
 
-    -- Window object
     local Window = {}
     local tabs   = {}
     local active = nil
