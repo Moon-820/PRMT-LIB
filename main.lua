@@ -246,7 +246,7 @@ local function doNotify(gui, cfg, theme)
     cb.MouseButton1Click:Connect(dismiss)
 end
 
-local Elements = require(script.Parent.Elements)
+local function injectElements(Tab, theme, page)
 
 function TryxLib:CreateWindow(config)
     config = config or {}
