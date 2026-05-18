@@ -1,4 +1,11 @@
-local TryxLib     = loadstring(game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua"))()
+local code = game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua")
+local func, err = loadstring(code)
+
+if not func then
+    error("Erreur dans main.lua :\n" .. tostring(err))
+end
+
+local Tryx = func()
 
 local Window = TryxLib.new({
     Title  = "TryxHub",
