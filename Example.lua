@@ -6,7 +6,7 @@ local Window = Tryx:CreateWindow({
     Icon       = "⚡",
     Theme      = Tryx.Themes.Default,
     ToggleKey  = Enum.KeyCode.RightAlt,
-    Size       = Vector2.new(500, 650),
+    Size       = Vector2.new(640, 300),
 })
 
 local Main = Window:Tab({ Title = "Main", Icon = "⚡" })
