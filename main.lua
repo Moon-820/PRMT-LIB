@@ -2083,7 +2083,7 @@ local function CreateLibrary(cfg)
     local title = cfg.Title or "TryxLib"
     local theme = cfg.Theme or Themes.Default
     local toggleKey = cfg.Key or Enum.KeyCode.RightShift
-    local startOpen = cfg.Open \~= false
+    local startOpen = cfg.Open ~= false
 
     local gui = Instance.new("ScreenGui")
     gui.Name = "TryxLib_" .. title
@@ -2163,10 +2163,77 @@ local function CreateLibrary(cfg)
     local contentArea = frame(win, theme.BackgroundAlt, UDim2.new(1, -SIDEBAR_W, 1, -TOPBAR_H))
     contentArea.Position = UDim2.new(0, SIDEBAR_W, 0, TOPBAR_H)
 
+    local tabs = {}
     local Library = {}
 
     function Library:Tab(cfg)
-        error("Tab function à compléter")
+        cfg = cfg or {}
+        local tabTitle = cfg.Title or "Tab"
+        local tabIcon  = cfg.Icon  or ""
+
+        local tabBtn = frame(tabList, theme.TabInactive, UDim2.new(1, 0, 0, 34))
+        corner(tabBtn, UDim.new(0, 6))
+
+        local tabLbl = lbl(tabBtn, (tabIcon ~= "" and tabIcon .. "  " or "") .. tabTitle, theme.TextSecondary, 12, Enum.Font.GothamMedium)
+        tabLbl.Size     = UDim2.new(1, -12, 1, 0)
+        tabLbl.Position = UDim2.new(0, 10, 0, 0)
+        tabLbl.TextTruncate = Enum.TextTruncate.AtEnd
+
+        local activeStroke = stroke(tabBtn, theme.TabStroke, 1.5)
+        activeStroke.Enabled = false
+
+        local page = Instance.new("ScrollingFrame")
+        page.Size                 = UDim2.fromScale(1, 1)
+        page.BackgroundTransparency = 1
+        page.BorderSizePixel      = 0
+        page.CanvasSize           = UDim2.new(0, 0, 0, 0)
+        page.AutomaticCanvasSize  = Enum.AutomaticSize.Y
+        page.ScrollBarThickness   = 3
+        page.ScrollBarImageColor3 = theme.ScrollBar
+        page.Visible              = false
+        page.Parent               = contentArea
+        pad(page, 8, 8, 8, 8)
+
+        local pageLayout = Instance.new("UIListLayout")
+        pageLayout.Padding   = UDim.new(0, ELEMENT_PAD)
+        pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        pageLayout.Parent    = page
+
+        local tabObj = {}
+        injectElements(tabObj, theme, page, gui)
+
+        local entry = { btn = tabBtn, page = page, lbl = tabLbl, tabStroke = activeStroke }
+        table.insert(tabs, entry)
+
+        local function selectTab()
+            for _, t in ipairs(tabs) do
+                t.page.Visible    = false
+                t.btn.BackgroundColor3 = theme.TabInactive
+                t.lbl.TextColor3  = theme.TextSecondary
+                t.tabStroke.Enabled = false
+            end
+            page.Visible           = true
+            tabBtn.BackgroundColor3 = theme.TabActive
+            tabLbl.TextColor3      = theme.TextPrimary
+            activeStroke.Enabled   = true
+        end
+
+        local tb = btn(tabBtn)
+        tb.MouseButton1Click:Connect(selectTab)
+        tb.MouseEnter:Connect(function()
+            if not page.Visible then
+                tw(tabBtn, { BackgroundColor3 = theme.TabHover })
+            end
+        end)
+        tb.MouseLeave:Connect(function()
+            if not page.Visible then
+                tw(tabBtn, { BackgroundColor3 = theme.TabInactive })
+            end
+        end)
+
+        if #tabs == 1 then selectTab() end
+
+        return tabObj
     end
 
     function Library:Notify(cfg)
@@ -2177,14 +2244,26 @@ local function CreateLibrary(cfg)
         win.Visible = not win.Visible
     end
 
+    function Library:SetTheme(newTheme)
+        theme = newTheme
+    end
+
     function Library:Destroy()
         gui:Destroy()
     end
+
+    UserInputService.InputBegan:Connect(function(i, gp)
+        if gp then return end
+        if i.KeyCode == toggleKey then
+            Library:Toggle()
+        end
+    end)
 
     return Library
 end
 
 local TryxLib = {}
+TryxLib.Themes = Themes
 function TryxLib.new(cfg)
     return CreateLibrary(cfg)
 end
