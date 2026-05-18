@@ -1,12 +1,9 @@
-local Tryx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua"))()
+local TryxLib     = loadstring(game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua"))()
 
-local Window = Tryx:CreateWindow({
-    Title      = "TryxHub",
-    Subtitle   = "v2.0 · Showcase",
-    Icon       = "⚡",
-    Theme      = Tryx.Themes.Default,
-    ToggleKey  = Enum.KeyCode.RightAlt,
-    Size       = Vector2.new(640, 300),
+local Window = TryxLib.new({
+    Title  = "TryxHub",
+    Theme  = TryxLib.Themes.Default,
+    Key    = Enum.KeyCode.RightAlt,
 })
 
 local Main = Window:Tab({ Title = "Main", Icon = "⚡" })
@@ -17,8 +14,8 @@ Main:ProfileFrame({
     Desc     = "@" .. game.Players.LocalPlayer.Name,
     Role     = "User",
     Badges   = {
-        { Text = "MEMBER", Color = Color3.fromRGB(90, 160, 255) },
-        { Text = "BETA",   Color = Color3.fromRGB(180, 80, 255) },
+        { Text = "MEMBER", Color = Color3.fromRGB(90, 160, 255)  },
+        { Text = "BETA",   Color = Color3.fromRGB(180, 80, 255)  },
     },
 })
 
@@ -35,36 +32,36 @@ Main:Button({
 })
 
 Main:Button({
-    Title        = "Custom Color Button",
-    Desc         = "Custom background using Color =",
-    Color        = Color3.fromRGB(14, 22, 36),
-    Callback     = function()
+    Title    = "Custom Color Button",
+    Desc     = "Custom background using Color =",
+    Color    = Color3.fromRGB(14, 22, 36),
+    Callback = function()
         Window:Notify({ Title = "Button", Desc = "Custom color clicked!", Type = "info", Duration = 3 })
     end,
 })
 
 Main:Button({
-    Title        = "Danger Button",
-    Desc         = "Red color · destructive action",
-    Color        = Color3.fromRGB(32, 10, 10),
-    Callback     = function()
+    Title    = "Danger Button",
+    Desc     = "Red tinted · destructive action",
+    Color    = Color3.fromRGB(32, 10, 10),
+    Callback = function()
         Window:Notify({ Title = "Danger", Desc = "Action executed!", Type = "error", Duration = 3 })
     end,
 })
 
 Main:Button({
-    Title        = "Disabled Button",
-    Desc         = "Not clickable — Disabled = true",
-    Disabled     = true,
-    Callback     = function() end,
+    Title    = "Disabled Button",
+    Desc     = "Not clickable — Disabled = true",
+    Disabled = true,
+    Callback = function() end,
 })
 
 Main:Button({
     Title        = "Transparent Button",
-    Desc         = "Transparency = 0.4",
+    Desc         = "Semi-transparent · Transparency = 0.4",
     Transparency = 0.4,
     Callback     = function()
-        Window:Notify({ Title = "Ghost", Desc = "Semi-transparent!", Type = "info", Duration = 2 })
+        Window:Notify({ Title = "Ghost", Desc = "Semi-transparent clicked!", Type = "info", Duration = 2 })
     end,
 })
 
@@ -72,7 +69,7 @@ Main:Section({ Title = "Toggles" })
 
 Main:Toggle({
     Title    = "Auto Farm",
-    Desc     = "Switch style — Default",
+    Desc     = "Switch style — default",
     Value    = false,
     Callback = function(state)
         Window:Notify({
@@ -90,7 +87,12 @@ Main:Toggle({
     Type     = "Checkbox",
     Value    = false,
     Callback = function(state)
-        Window:Notify({ Title = "God Mode", Desc = state and "ON" or "OFF", Type = state and "success" or "warn", Duration = 2 })
+        Window:Notify({
+            Title    = "God Mode",
+            Desc     = state and "ON" or "OFF",
+            Type     = state and "success" or "warn",
+            Duration = 2,
+        })
     end,
 })
 
@@ -118,7 +120,7 @@ Main:Section({ Title = "Sliders" })
 
 Main:Slider({
     Title    = "Walk Speed",
-    Desc     = "Character speed",
+    Desc     = "Character movement speed",
     Min      = 16,
     Max      = 500,
     Value    = 16,
@@ -134,7 +136,7 @@ Main:Slider({
 
 Main:Slider({
     Title    = "Jump Power",
-    Desc     = "Input = true · manual input enabled",
+    Desc     = "Input = true · manual value input",
     Min      = 50,
     Max      = 1000,
     Value    = 50,
@@ -150,8 +152,8 @@ Main:Slider({
 })
 
 Main:Slider({
-    Title    = "FOV",
-    Desc     = "Field of view — Input + Color",
+    Title    = "Field of View",
+    Desc     = "Camera FOV — Input + custom color",
     Min      = 70,
     Max      = 120,
     Value    = 70,
@@ -181,13 +183,13 @@ Main:Input({
     Desc        = "Enter a player name",
     Placeholder = "ex: Builderman",
     Callback    = function(v)
-        print("Value:", v)
+        print("Username:", v)
     end,
 })
 
 Main:Input({
     Title       = "Custom Seed",
-    Desc        = "Colored background — Color =",
+    Desc        = "Blue tinted background — Color =",
     Placeholder = "ex: 123456",
     Color       = Color3.fromRGB(14, 14, 26),
     Callback    = function(v)
@@ -197,7 +199,7 @@ Main:Input({
 
 Main:Input({
     Title       = "Script Executor",
-    Desc        = "MultiLine = true · long input",
+    Desc        = "MultiLine = true · multi-line input",
     Placeholder = "print('Hello World')",
     MultiLine   = true,
     Callback    = function(v)
@@ -206,18 +208,85 @@ Main:Input({
 })
 
 Main:Input({
-    Title       = "Read Only",
-    Desc        = "Disabled = true",
-    Value       = "Not editable",
-    Disabled    = true,
-    Callback    = function() end,
+    Title    = "Read Only",
+    Desc     = "Disabled = true",
+    Default  = "Not editable",
+    Disabled = true,
+    Callback = function() end,
+})
+
+Main:Section({ Title = "Number Inputs" })
+
+Main:NumberInput({
+    Title    = "Max Players",
+    Desc     = "+/– buttons with manual input",
+    Min      = 1,
+    Max      = 100,
+    Step     = 1,
+    Value    = 10,
+    Callback = function(v)
+        print("Max players:", v)
+    end,
+})
+
+Main:NumberInput({
+    Title    = "Coin Amount",
+    Desc     = "Step = 50",
+    Min      = 0,
+    Max      = 100000,
+    Step     = 50,
+    Value    = 500,
+    Callback = function(v)
+        print("Coins:", v)
+    end,
+})
+
+Main:Section({ Title = "Progress Bars" })
+
+local progressBar = Main:ProgressBar({
+    Title      = "Loading Progress",
+    Desc       = "Live update — use :Set(0..1)",
+    Value      = 0,
+    BarColor   = Color3.fromRGB(218, 175, 55),
+    ShowPercent = true,
+})
+
+local filling = true
+task.spawn(function()
+    local v = 0
+    while task.wait(0.04) do
+        if filling then
+            v = math.min(1, v + 0.008)
+            if v >= 1 then filling = false end
+        else
+            v = math.max(0, v - 0.012)
+            if v <= 0 then filling = true end
+        end
+        progressBar:Set(v)
+    end
+end)
+
+Main:ProgressBar({
+    Title      = "Server Health",
+    Desc       = "Static — Value = 0.72",
+    Value      = 0.72,
+    BarColor   = Color3.fromRGB(58, 188, 98),
+    ShowPercent = true,
+})
+
+Main:ProgressBar({
+    Title      = "Cooldown",
+    Desc       = "Danger bar — BarColor = red",
+    Value      = 0.25,
+    BarColor   = Color3.fromRGB(210, 58, 58),
+    ShowPercent = true,
 })
 
 Main:Section({ Title = "Dropdowns" })
 
 Main:Dropdown({
     Title    = "Game Mode",
-    Desc     = "Classic selector",
+    Desc     = "Classic single-select",
     Values   = { "Solo", "Duo", "Squad", "Custom" },
     Value    = "Solo",
     Callback = function(v)
@@ -227,17 +296,19 @@ Main:Dropdown({
 
 Main:Dropdown({
     Title    = "Active Auras",
-    Desc     = "Multi = true · multiple choices",
+    Desc     = "Multi = true · multiple selection",
     Values   = { "Flame", "Ice", "Thunder", "Shadow", "Holy" },
     Multi    = true,
     Callback = function(selected)
-        print("Auras:", table.concat(selected, ", "))
+        local list = {}
+        for k in pairs(selected) do table.insert(list, k) end
+        print("Auras:", table.concat(list, ", "))
     end,
 })
 
 Main:Dropdown({
     Title    = "Skin",
-    Desc     = "Custom color",
+    Desc     = "Custom color background",
     Values   = { "Default", "Gold", "Obsidian", "Neon" },
     Value    = "Default",
     Color    = Color3.fromRGB(22, 16, 6),
@@ -250,13 +321,25 @@ Main:Section({ Title = "Keybinds" })
 
 Main:Keybind({
     Title    = "Toggle ESP",
-    Desc     = "Press to change the key",
+    Desc     = "Click to rebind · press key in game",
     Key      = Enum.KeyCode.X,
     Callback = function(key)
-        Window:Notify({ Title = "ESP Keybind", Desc = "Key: " .. key.Name, Type = "info", Duration = 2 })
+        Window:Notify({ Title = "ESP Keybind", Desc = "Key set: " .. key.Name, Type = "info", Duration = 2 })
     end,
     OnPress  = function()
         print("ESP toggled by keybind")
+    end,
+})
+
+Main:Keybind({
+    Title    = "Noclip",
+    Desc     = "Separate keybind",
+    Key      = Enum.KeyCode.N,
+    Callback = function(key)
+        print("Noclip key:", key.Name)
+    end,
+    OnPress  = function()
+        Window:Notify({ Title = "Noclip", Desc = "Toggled!", Type = "warn", Duration = 2 })
     end,
 })
 
@@ -266,7 +349,7 @@ Main:KeybindButton({
     Key        = Enum.KeyCode.T,
     ButtonText = "Run",
     Callback   = function()
-        Window:Notify({ Title = "Teleport", Desc = "Teleport completed", Type = "success", Duration = 2 })
+        Window:Notify({ Title = "Teleport", Desc = "Teleport executed!", Type = "success", Duration = 2 })
     end,
 })
 
@@ -274,7 +357,7 @@ Main:Section({ Title = "Color Pickers" })
 
 Main:ColorPicker({
     Title    = "ESP Color",
-    Desc     = "Choose ESP color",
+    Desc     = "Choose highlight color",
     Value    = Color3.fromRGB(255, 80, 80),
     Callback = function(color)
         print("ESP Color:", color)
@@ -283,7 +366,7 @@ Main:ColorPicker({
 
 Main:ColorPicker({
     Title    = "Aura Color",
-    Desc     = "Color picker + custom background",
+    Desc     = "Custom blue background",
     Value    = Color3.fromRGB(80, 120, 255),
     Color    = Color3.fromRGB(10, 10, 22),
     Callback = function(color)
@@ -294,32 +377,23 @@ Main:ColorPicker({
 Main:Section({ Title = "Text & Layout" })
 
 Main:Paragraph({
-    Title = "About",
-    Desc  = "TryxHub is powered by TryxLib v2.0, a premium interface developed by Moon820. All features are available in this example.",
+    Title = "About TryxHub",
+    Desc  = "TryxHub is powered by TryxLib, a professional Roblox UI library. All features shown in this example are fully functional and compatible with the current library version.",
 })
 
 Main:Paragraph({
-    Title     = "Important Note",
-    Desc      = "Using these features in public servers may result in a ban. Use carefully.",
-    AccentBar = Color3.fromRGB(218, 158, 38),
-})
-
-Main:Paragraph({
-    Title     = "Status : Active",
-    Desc      = "All modules loaded successfully.",
-    AccentBar = Color3.fromRGB(58, 188, 98),
+    Title = "Status : Active",
+    Desc  = "All modules loaded successfully. No errors detected.",
 })
 
 Main:Label({
-    Text  = "• Latest update: v2.0",
+    Title = "• Latest update: v2.0",
     Color = Color3.fromRGB(90, 90, 110),
-    Size  = 11,
 })
 
 Main:Label({
-    Text  = "• Developed by Moon820",
+    Title = "• Developed by Moon820",
     Color = Color3.fromRGB(218, 175, 55),
-    Size  = 11,
 })
 
 Main:Divider({ Label = "Separator" })
@@ -338,7 +412,7 @@ local Cards = Window:Tab({ Title = "Cards", Icon = "◈" })
 
 Cards:Section({ Title = "Simple Cards" })
 
-Cards:Card({
+local killCard = Cards:Card({
     Title      = "Kills",
     Desc       = "Current session",
     Icon       = "⚔",
@@ -350,9 +424,10 @@ Cards:Card({
 Cards:Card({
     Title      = "Streak",
     Desc       = "Your best streak",
-    Icon       = "🔥",
+    Icon       = "★",
     Value      = 7,
     ValueColor = Color3.fromRGB(218, 100, 40),
+    Height     = 82,
     Callback   = function()
         Window:Notify({ Title = "Streak", Desc = "Details loaded", Type = "info", Duration = 2 })
     end,
@@ -361,7 +436,7 @@ Cards:Card({
 Cards:Card({
     Title       = "Premium",
     Desc        = "Account status",
-    Icon        = "★",
+    Icon        = "◆",
     Value       = "Active",
     ValueColor  = Color3.fromRGB(218, 175, 55),
     Color       = Color3.fromRGB(28, 22, 8),
@@ -371,29 +446,32 @@ Cards:Card({
 
 Cards:Section({ Title = "Card Rows — Multi Columns" })
 
-local row = Cards:CardRow({
-    { Title = "Kills",  Value = 0,    Sub = "Session",  ValueColor = Color3.fromRGB(218, 175, 55) },
-    { Title = "Deaths", Value = 0,    Sub = "Session",  ValueColor = Color3.fromRGB(210, 58, 58)  },
-    { Title = "K/D",    Value = "∞",  Sub = "Ratio",    ValueColor = Color3.fromRGB(58, 188, 98)  },
+local rowCards = Cards:CardRow({
+    { Title = "Kills",  Value = 0,   Sub = "Session", ValueColor = Color3.fromRGB(218, 175, 55) },
+    { Title = "Deaths", Value = 0,   Sub = "Session", ValueColor = Color3.fromRGB(210, 58, 58)  },
+    { Title = "K/D",    Value = "∞", Sub = "Ratio",   ValueColor = Color3.fromRGB(58, 188, 98)  },
 })
 
 Cards:CardRow({
-    { Title = "Ping",   Value = "-- ms", Sub = "Network",  ValueColor = Color3.fromRGB(90, 160, 255) },
-    { Title = "FPS",    Value = "60",    Sub = "Render",   ValueColor = Color3.fromRGB(58, 188, 98)  },
+    { Title = "Ping",   Value = "-- ms", Sub = "Network", ValueColor = Color3.fromRGB(90, 160, 255) },
+    { Title = "FPS",    Value = "60",    Sub = "Render",  ValueColor = Color3.fromRGB(58, 188, 98)  },
+    { Title = "Memory", Value = "-- MB", Sub = "Usage",   ValueColor = Color3.fromRGB(218, 158, 38) },
 })
 
-Cards:Space({ Height = 4 })
-
 task.spawn(function()
-    while task.wait(1) do
-        local fps = math.floor(1 / RunService.Heartbeat:Wait())
-        row[1]:SetValue(math.random(0, 50))
-        row[2]:SetValue(math.random(0, 20))
-        pcall(function()
-            Cards:CardRow({})
-        end)
+    local kills, deaths = 0, 0
+    while task.wait(2) do
+        kills  = kills  + math.random(0, 3)
+        deaths = deaths + math.random(0, 1)
+        local kd = deaths == 0 and "∞" or tostring(math.floor((kills / deaths) * 10) / 10)
+        rowCards[1]:SetValue(kills)
+        rowCards[2]:SetValue(deaths)
+        rowCards[3]:SetValue(kd)
+        killCard:SetValue(kills)
     end
 end)
+
+Cards:Space({ Height = 4 })
 
 Cards:Section({ Title = "ProfileFrame Variants" })
 
@@ -414,9 +492,22 @@ Cards:ProfileFrame({
     Role     = "DEV",
     Color    = Color3.fromRGB(16, 12, 24),
     Badges   = {
-        { Text = "ADMIN",  Color = Color3.fromRGB(210, 58, 58)   },
-        { Text = "OWNER",  Color = Color3.fromRGB(218, 175, 55)  },
-        { Text = "DEV",    Color = Color3.fromRGB(138, 108, 255) },
+        { Text = "ADMIN", Color = Color3.fromRGB(210, 58, 58)   },
+        { Text = "OWNER", Color = Color3.fromRGB(218, 175, 55)  },
+        { Text = "DEV",   Color = Color3.fromRGB(138, 108, 255) },
+    },
+})
+
+Cards:Section({ Title = "Data Table" })
+
+Cards:Table({
+    Headers = { "Player", "Score", "Rank", "Status" },
+    Rows    = {
+        { "Moon820",    "9,840", "#1",  "Online"  },
+        { "Builderman", "7,210", "#2",  "Online"  },
+        { "Roblox",     "5,500", "#3",  "AFK"     },
+        { "Guest_1337", "3,120", "#4",  "Offline" },
+        { "xX_Pro_Xx",  "1,080", "#5",  "Online"  },
     },
 })
 
@@ -433,7 +524,7 @@ Settings:Toggle({
 
 Settings:Toggle({
     Title    = "Compact Mode",
-    Desc     = "Reduce spacing — Checkbox",
+    Desc     = "Reduce element spacing — Checkbox",
     Type     = "Checkbox",
     Value    = false,
     Callback = function(v) print("Compact:", v) end,
@@ -441,7 +532,7 @@ Settings:Toggle({
 
 Settings:Slider({
     Title    = "UI Scale",
-    Desc     = "Global menu size",
+    Desc     = "Global interface size",
     Min      = 60,
     Max      = 130,
     Value    = 100,
@@ -451,11 +542,11 @@ Settings:Slider({
 })
 
 Settings:ColorPicker({
-    Title    = "Accent Color",
-    Desc     = "Change the library accent color",
+    Title    = "Accent Override",
+    Desc     = "Preview a custom accent color",
     Value    = Color3.fromRGB(218, 175, 55),
     Callback = function(color)
-        print("New accent:", color)
+        print("Accent:", color)
     end,
 })
 
@@ -464,10 +555,18 @@ Settings:Divider({ Label = "Theme" })
 Settings:Dropdown({
     Title    = "Interface Theme",
     Desc     = "Change the global appearance",
-    Values   = { "Default", "Dark", "Midnight" },
+    Values   = { "Default", "Dark", "Midnight", "Slate" },
     Value    = "Default",
     Callback = function(v)
-        Window:SetTheme(v)
+        local themeMap = {
+            Default  = TryxLib.Themes.Default,
+            Dark     = TryxLib.Themes.Dark,
+            Midnight = TryxLib.Themes.Midnight,
+            Slate    = TryxLib.Themes.Slate,
+        }
+        if themeMap[v] then
+            Window:SetTheme(themeMap[v])
+        end
         Window:Notify({ Title = "Theme", Desc = "Applied: " .. v, Type = "info", Duration = 2 })
     end,
 })
@@ -478,14 +577,16 @@ Settings:Keybind({
     Title    = "Toggle GUI",
     Desc     = "Open / close the interface",
     Key      = Enum.KeyCode.RightAlt,
-    Callback = function(key) print("Toggle key:", key.Name) end,
+    Callback = function(key)
+        print("Toggle key changed:", key.Name)
+    end,
 })
 
 Settings:KeybindButton({
     Title      = "Panic Key",
-    Desc       = "Instantly close the GUI",
+    Desc       = "Instantly close and destroy the GUI",
     Key        = Enum.KeyCode.End,
-    ButtonText = "Run",
+    ButtonText = "Close",
     Callback   = function()
         Window:Destroy()
     end,
@@ -504,7 +605,7 @@ Settings:Button({
     Title    = "Error Notification",
     Color    = Color3.fromRGB(28, 10, 10),
     Callback = function()
-        Window:Notify({ Title = "Error", Desc = "An error occurred.", Type = "error", Duration = 4 })
+        Window:Notify({ Title = "Error", Desc = "An unexpected error occurred.", Type = "error", Duration = 4 })
     end,
 })
 
@@ -512,7 +613,7 @@ Settings:Button({
     Title    = "Warning Notification",
     Color    = Color3.fromRGB(28, 22, 8),
     Callback = function()
-        Window:Notify({ Title = "Warning", Desc = "Proceed carefully.", Type = "warn", Duration = 4 })
+        Window:Notify({ Title = "Warning", Desc = "Proceed with caution.", Type = "warn", Duration = 4 })
     end,
 })
 
@@ -520,7 +621,7 @@ Settings:Button({
     Title    = "Info Notification",
     Color    = Color3.fromRGB(10, 16, 28),
     Callback = function()
-        Window:Notify({ Title = "Info", Desc = "TryxLib v2.0 — everything works.", Type = "info", Duration = 4 })
+        Window:Notify({ Title = "Info", Desc = "TryxLib v2.0 — everything is working.", Type = "info", Duration = 4 })
     end,
 })
 
@@ -528,16 +629,16 @@ Settings:Divider({ Label = "Danger Zone" })
 
 Settings:Button({
     Title    = "Reset Settings",
-    Desc     = "Reset all saved options",
+    Desc     = "Revert all options to default",
     Color    = Color3.fromRGB(28, 8, 8),
     Callback = function()
-        Window:Notify({ Title = "Reset", Desc = "Settings reset", Type = "warn", Duration = 3 })
+        Window:Notify({ Title = "Reset", Desc = "Settings have been reset.", Type = "warn", Duration = 3 })
     end,
 })
 
 Window:Notify({
     Title    = "TryxHub",
-    Desc     = "Loaded successfully · Example.lua",
+    Desc     = "Loaded successfully!",
     Type     = "success",
     Duration = 5,
 })
