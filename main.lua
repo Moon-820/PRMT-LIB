@@ -2078,12 +2078,12 @@ local function injectElements(Tab, theme, page, gui)
     end
 end
 
-local function TryxLib.new(cfg)
+local function CreateLibrary(cfg)
     cfg = cfg or {}
     local title   = cfg.Title   or "TryxLib"
     local theme   = cfg.Theme   or Themes.Default
     local toggleKey = cfg.Key   or Enum.KeyCode.RightShift
-    local startOpen = cfg.Open ~= false
+    local startOpen = cfg.Open \~= false
 
     local gui = Instance.new("ScreenGui")
     gui.Name            = "TryxLib_" .. title
@@ -2221,7 +2221,7 @@ local function TryxLib.new(cfg)
         local tabContentFrame = frame(tabBtn, Color3.fromRGB(0, 0, 0), UDim2.new(1, 0, 1, 0))
         tabContentFrame.BackgroundTransparency = 1
 
-        if tabIcon ~= "" then
+        if tabIcon \~= "" then
             local ic = lbl(tabContentFrame, tabIcon, theme.TextSecondary, 13, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
             ic.Size     = UDim2.new(0, 20, 1, 0)
             ic.Position = UDim2.new(0, 6, 0, 0)
@@ -2229,8 +2229,8 @@ local function TryxLib.new(cfg)
         end
 
         local tl = lbl(tabContentFrame, tabTitle, theme.TextSecondary, 12, Enum.Font.GothamMedium)
-        tl.Size     = UDim2.new(1, tabIcon ~= "" and -28 or -12, 1, 0)
-        tl.Position = UDim2.new(0, tabIcon ~= "" and 28 or 6, 0, 0)
+        tl.Size     = UDim2.new(1, tabIcon \~= "" and -28 or -12, 1, 0)
+        tl.Position = UDim2.new(0, tabIcon \~= "" and 28 or 6, 0, 0)
         tl.TextTruncate = Enum.TextTruncate.AtEnd
 
         local tabPage = Instance.new("ScrollingFrame")
@@ -2318,9 +2318,10 @@ local function TryxLib.new(cfg)
     return Library
 end
 
-local TryxLib_new = TryxLib.new
+local TryxLib = {}
+
 function TryxLib.new(cfg)
-    return TryxLib_new(cfg)
+    return CreateLibrary(cfg)
 end
 
 return TryxLib
