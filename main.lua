@@ -371,6 +371,7 @@ local keyNames = {
     [Enum.KeyCode.Space]        = "SPACE",
     [Enum.KeyCode.Tab]          = "TAB",
     [Enum.KeyCode.Delete]       = "DEL",
+    [Enum.KeyCode.Backspace]    = "BACK",
     [Enum.KeyCode.Escape]       = "ESC",
     [Enum.KeyCode.Insert]       = "INS",
     [Enum.KeyCode.Home]         = "HOME",
@@ -780,16 +781,18 @@ local function injectElements(Tab, theme, page, gui)
         input.TextYAlignment     = multiline and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center
         input.Parent             = box
 
-        if disabled then input.TextEditable = false end
+        input.TextEditable = not disabled
+        input.Interactable = not disabled
 
         input.Focused:Connect(function()
+            if disabled then input:ReleaseFocus() return end
             tw(box, { BackgroundColor3 = theme.ElementHover })
             tw(boxS, { Color = theme.Accent })
         end)
         input.FocusLost:Connect(function(enter)
             tw(box, { BackgroundColor3 = theme.InputBg })
             tw(boxS, { Color = theme.ElementStroke })
-            if enter then task.spawn(function() pcall(cfg.Callback or function() end, input.Text) end) end
+            if enter and not disabled then task.spawn(function() pcall(cfg.Callback or function() end, input.Text) end) end
         end)
         if cfg.LiveCallback then
             input:GetPropertyChangedSignal("Text"):Connect(function()
@@ -807,6 +810,7 @@ local function injectElements(Tab, theme, page, gui)
         function obj:SetDisabled(v)
             disabled = v
             input.TextEditable = not v
+            input.Interactable = not v
             tw(f, { BackgroundTransparency = v and 0.4 or 0 })
         end
         return obj
@@ -1017,7 +1021,7 @@ local function injectElements(Tab, theme, page, gui)
             local sg = gui
             if not sg then return end
 
-            list = frame(sg, theme.Element, UDim2.new(0, 110, 0, 0))
+            list = frame(sg, theme.Element, UDim2.new(0, 120, 0, 0))
             list.ZIndex           = OVERLAY_Z
             list.ClipsDescendants = true
             list.BackgroundTransparency = 0
@@ -1096,12 +1100,20 @@ local function injectElements(Tab, theme, page, gui)
                 end)
             end
 
-            list.Size = UDim2.new(0, 110, 0, 0)
-
+            list.Size = UDim2.new(0, 120, 0, listH)
             positionPopup(list, selBox, 0, 4)
+            list.Size = UDim2.new(0, 120, 0, 0)
 
-            tw(list, { Size = UDim2.new(0, 110, 0, listH) }, ANIM_FAST)
+            tw(list, { Size = UDim2.new(0, 120, 0, listH) }, ANIM_FAST)
             tw(chevron, { Rotation = 180 }, ANIM_FAST)
+
+            scrollConn = RunService.Heartbeat:Connect(function()
+                if list and list.Parent and selBox and selBox.Parent then
+                    positionPopup(list, selBox, 0, 4)
+                else
+                    if scrollConn then scrollConn:Disconnect(); scrollConn = nil end
+                end
+            end)
 
             listConn = UserInputService.InputBegan:Connect(function(i, gp)
                 if gp then return end
@@ -1169,9 +1181,10 @@ local function injectElements(Tab, theme, page, gui)
         cfg = cfg or {}
         local value    = cfg.Value    or Color3.fromRGB(255, 255, 255)
         local disabled = cfg.Disabled or false
-        local open     = false
-        local panel    = nil
-        local panelConn = nil
+        local open          = false
+        local panel         = nil
+        local panelConn     = nil
+        local panelTrackConn = nil
 
         local f = baseEl(theme, cfg)
         f.ClipsDescendants = true
@@ -1200,6 +1213,7 @@ local function injectElements(Tab, theme, page, gui)
             end)
             panel = nil
             if panelConn then panelConn:Disconnect(); panelConn = nil end
+            if panelTrackConn then panelTrackConn:Disconnect(); panelTrackConn = nil end
             unregisterOverlay(closePanel)
         end
 
@@ -1364,11 +1378,19 @@ local function injectElements(Tab, theme, page, gui)
                 end)
             end
 
-            panel.Size = UDim2.new(0, 214, 0, 0)
-            positionPopup(panel, preview, -182, 6)
-
             local targetH = 26 + 8 + 3 * (26 + 8) + 20
+            panel.Size = UDim2.new(0, 214, 0, targetH)
+            positionPopup(panel, preview, -182, 6)
+            panel.Size = UDim2.new(0, 214, 0, 0)
             tw(panel, { Size = UDim2.new(0, 214, 0, targetH) }, ANIM_FAST)
+
+            panelTrackConn = RunService.Heartbeat:Connect(function()
+                if panel and panel.Parent and preview and preview.Parent then
+                    positionPopup(panel, preview, -182, 6)
+                else
+                    if panelTrackConn then panelTrackConn:Disconnect(); panelTrackConn = nil end
+                end
+            end)
 
             panelConn = UserInputService.InputBegan:Connect(function(i, gp)
                 if gp then return end
@@ -2140,6 +2162,14 @@ local function CreateLibrary(cfg)
     end)
 
     makeDraggable(topBar, win)
+
+    local resizeHandle = frame(win, theme.ElementStroke, UDim2.new(0, 12, 0, 12))
+    resizeHandle.Position      = UDim2.new(1, -12, 1, -12)
+    resizeHandle.AnchorPoint   = Vector2.new(1, 1)
+    resizeHandle.ZIndex        = 6
+    resizeHandle.ClipsDescendants = false
+    corner(resizeHandle, UDim.new(0, 3))
+    makeResizable(resizeHandle, win)
 
     local sideBar = frame(win, theme.Sidebar, UDim2.new(0, SIDEBAR_W, 1, -TOPBAR_H))
     sideBar.Position = UDim2.new(0, 0, 0, TOPBAR_H)
