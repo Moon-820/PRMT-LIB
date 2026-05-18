@@ -371,7 +371,6 @@ local keyNames = {
     [Enum.KeyCode.Space]        = "SPACE",
     [Enum.KeyCode.Tab]          = "TAB",
     [Enum.KeyCode.Delete]       = "DEL",
-    [Enum.KeyCode.BackSpace]    = "BACK",
     [Enum.KeyCode.Escape]       = "ESC",
     [Enum.KeyCode.Insert]       = "INS",
     [Enum.KeyCode.Home]         = "HOME",
