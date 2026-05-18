@@ -2080,25 +2080,25 @@ end
 
 local function CreateLibrary(cfg)
     cfg = cfg or {}
-    local title     = cfg.Title   or "TryxLib"
-    local theme     = cfg.Theme   or Themes.Default
-    local toggleKey = cfg.Key     or Enum.KeyCode.RightShift
+    local title = cfg.Title or "TryxLib"
+    local theme = cfg.Theme or Themes.Default
+    local toggleKey = cfg.Key or Enum.KeyCode.RightShift
     local startOpen = cfg.Open \~= false
 
     local gui = Instance.new("ScreenGui")
-    gui.Name            = "TryxLib_" .. title
-    gui.ResetOnSpawn    = false
-    gui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
-    gui.DisplayOrder    = 100
-    gui.IgnoreGuiInset  = true
-    gui.Parent          = (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
+    gui.Name = "TryxLib_" .. title
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.DisplayOrder = 100
+    gui.IgnoreGuiInset = true
+    gui.Parent = (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
 
     local win = frame(gui, theme.Background, UDim2.new(0, DEFAULT_W, 0, DEFAULT_H))
-    win.AnchorPoint     = Vector2.new(0.5, 0.5)
-    win.Position        = UDim2.new(0.5, 0, 0.5, 0)
+    win.AnchorPoint = Vector2.new(0.5, 0.5)
+    win.Position = UDim2.new(0.5, 0, 0.5, 0)
     win.BorderSizePixel = 0
     win.ClipsDescendants = false
-    win.Visible         = startOpen
+    win.Visible = startOpen
     corner(win, CORNER_WIN)
     stroke(win, theme.ElementStroke, 1)
     shadow(win)
@@ -2107,18 +2107,18 @@ local function CreateLibrary(cfg)
     corner(topBar, CORNER_WIN)
 
     local titleLbl = lbl(topBar, title, theme.TextPrimary, 13, Enum.Font.GothamBold)
-    titleLbl.Size     = UDim2.new(1, -80, 1, 0)
+    titleLbl.Size = UDim2.new(1, -80, 1, 0)
     titleLbl.Position = UDim2.new(0, 16, 0, 0)
     titleLbl.TextTruncate = Enum.TextTruncate.AtEnd
 
     local closeBtn = frame(topBar, theme.Danger, UDim2.new(0, 12, 0, 12))
     closeBtn.Position = UDim2.new(1, -20, 0.5, -6)
-    closeBtn.ZIndex   = 3
+    closeBtn.ZIndex = 3
     corner(closeBtn, UDim.new(1, 0))
 
     local closeBtnB = btn(topBar, UDim2.new(0, 22, 0, 22), UDim2.new(1, -24, 0.5, -11), 4)
     closeBtnB.MouseButton1Click:Connect(function()
-        tw(win, {Size = UDim2.new(0, DEFAULT_W, 0, 0)}, ANIM_FAST)
+        tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, 0) }, ANIM_FAST)
         task.wait(ANIM_FAST + 0.02)
         win.Visible = false
         win.Size = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H)
@@ -2126,7 +2126,7 @@ local function CreateLibrary(cfg)
 
     local minBtn = frame(topBar, theme.Warning, UDim2.new(0, 12, 0, 12))
     minBtn.Position = UDim2.new(1, -38, 0.5, -6)
-    minBtn.ZIndex   = 3
+    minBtn.ZIndex = 3
     corner(minBtn, UDim.new(1, 0))
 
     local minBtnB = btn(topBar, UDim2.new(0, 22, 0, 22), UDim2.new(1, -42, 0.5, -11), 4)
@@ -2134,9 +2134,9 @@ local function CreateLibrary(cfg)
     minBtnB.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            tw(win, {Size = UDim2.new(0, DEFAULT_W, 0, TOPBAR_H)}, ANIM_MED)
+            tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, TOPBAR_H) }, ANIM_MED)
         else
-            tw(win, {Size = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H)}, ANIM_MED)
+            tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H) }, ANIM_MED)
         end
     end)
 
@@ -2166,8 +2166,7 @@ local function CreateLibrary(cfg)
     local Library = {}
 
     function Library:Tab(cfg)
-
-        error("Tab function not fully implemented in this fix")
+        error("Tab function à compléter")
     end
 
     function Library:Notify(cfg)
@@ -2191,4 +2190,3 @@ function TryxLib.new(cfg)
 end
 
 return TryxLib
-        
