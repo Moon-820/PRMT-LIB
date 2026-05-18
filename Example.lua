@@ -1,4 +1,4 @@
-local Tryx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua"))()
+local TryxLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Moon-820/PRMT-LIB/refs/heads/main/main.lua"))()
 
 local Window = TryxLib.new({
     Title  = "TryxHub",
