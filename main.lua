@@ -471,51 +471,70 @@ end
 local function injectElements(Tab, theme, page)
 
     function Tab:Button(cfg)
-        cfg = cfg or {}
-        local f = baseEl(theme, cfg)
-        f.ClipsDescendants = true
-        titleDesc(f, theme, cfg, 34)
+    cfg = cfg or {}
 
-        local arr = lbl(f, "›", theme.Accent, 22, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
-        arr.Size     = UDim2.new(0,22,1,0)
-        arr.Position = UDim2.new(1,-26,0,0)
+    local f = baseEl(theme, cfg)
+    f.ClipsDescendants = true
+    titleDesc(f, theme, cfg, 34)
 
-        local disabled = cfg.Disabled or false
-        local b = btn(f)
+    local arr = lbl(f, "›", theme.Accent, 22, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
+    arr.Size = UDim2.new(0,22,1,0)
+    arr.Position = UDim2.new(1,-26,0,0)
 
-        b.MouseEnter:Connect(function()
-            if disabled then return end
-            tw(f,{BackgroundColor3=theme.ElementHover})
-            tw(arr,{TextColor3=theme.AccentLight})
-        end)
-        b.MouseLeave:Connect(function()
-            if disabled then return end
-            tw(f,{BackgroundColor3=cfg.Color or theme.Element})
-            tw(arr,{TextColor3=theme.Accent})
-        end)
-        b.MouseButton1Down:Connect(function()
-            if disabled then return end
-            tw(f,{BackgroundColor3=theme.ElementActive})
-        end)
-        b.MouseButton1Up:Connect(function()
-            if disabled then return end
-            tw(f,{BackgroundColor3=theme.ElementHover})
-        end)
-        b.MouseButton1Click:Connect(function()
-            if disabled then return end
-            ripple(f,theme)
-            task.spawn(function() pcall(cfg.Callback or function()end) end)
-        end)
+    local disabled = cfg.Disabled or false
+    local b = btn(f)
 
-        if disabled then f.BackgroundTransparency = 0.4 end
-        f.Parent = page
+    b.MouseEnter:Connect(function()
+        if disabled then return end
+        tw(f,{BackgroundColor3=theme.ElementHover})
+        tw(arr,{TextColor3=theme.AccentLight})
+    end)
 
-        local obj = {_frame=f}
-        function obj:SetDisabled(v) disabled=v; tw(f,{BackgroundTransparency=v and 0.4 or 0}) end
-        function obj:Trigger() task.spawn(function() pcall(cfg.Callback or function()end) end) end
-        return obj
+    b.MouseLeave:Connect(function()
+        if disabled then return end
+        tw(f,{BackgroundColor3=cfg.Color or theme.Element})
+        tw(arr,{TextColor3=theme.Accent})
+    end)
+
+    b.MouseButton1Down:Connect(function()
+        if disabled then return end
+        tw(f,{BackgroundColor3=theme.ElementActive})
+    end)
+
+    b.MouseButton1Up:Connect(function()
+        if disabled then return end
+        tw(f,{BackgroundColor3=theme.ElementHover})
+    end)
+
+    b.MouseButton1Click:Connect(function()
+        if disabled then return end
+        task.spawn(function()
+            pcall(cfg.Callback or function() end)
+        end)
+    end)
+
+    if disabled then
+        f.BackgroundTransparency = 0.4
     end
 
+    f.Parent = page
+
+    local obj = {_frame = f}
+
+    function obj:SetDisabled(v)
+        disabled = v
+        tw(f,{BackgroundTransparency = v and 0.4 or 0})
+    end
+
+    function obj:Trigger()
+        task.spawn(function()
+            pcall(cfg.Callback or function() end)
+        end)
+    end
+
+    return obj
+    end
+    
     function Tab:Toggle(cfg)
         cfg = cfg or {}
         local toggleType = cfg.Type  or "Default"
@@ -651,131 +670,140 @@ local function injectElements(Tab, theme, page)
     end
 
     function Tab:Slider(cfg)
-        cfg = cfg or {}
-        local mn       = cfg.Min    or 0
-        local mx       = cfg.Max    or 100
-        local value    = math.clamp(cfg.Value or mn, mn, mx)
-        local suffix   = cfg.Suffix or ""
-        local step     = cfg.Step   or 1
-        local showInp  = cfg.Input  or false
-        local disabled = cfg.Disabled or false
+    cfg=cfg or {}
+    local mn=cfg.Min or 0
+    local mx=cfg.Max or 100
+    local value=math.clamp(cfg.Value or mn,mn,mx)
+    local suffix=cfg.Suffix or ""
+    local step=cfg.Step or 1
+    local showInp=cfg.Input or false
+    local disabled=cfg.Disabled or false
 
-        local hasDesc = cfg.Desc and cfg.Desc ~= ""
-        local h       = (hasDesc and 82 or 66) + (showInp and 0 or 0)
+    local hasDesc=cfg.Desc and cfg.Desc~=""
+    local h=(hasDesc and 82 or 66)
 
-        local f = frame(page, cfg.Color or theme.Element, UDim2.new(1,0,0,h))
-        f.BorderSizePixel = 0
-        corner(f, CORNER_EL)
-        stroke(f, theme.ElementStroke, 1)
-        pad(f, 0,0,14,14)
+    local f=frame(page,cfg.Color or theme.Element,UDim2.new(1,0,0,h))
+    f.BorderSizePixel=0
+    corner(f,CORNER_EL)
+    stroke(f,theme.ElementStroke,1)
+    pad(f,0,0,14,14)
 
-        local valDisplay
-        if not showInp then
-            valDisplay = lbl(f, tostring(value)..suffix, theme.Accent, 12, Enum.Font.GothamBold, Enum.TextXAlignment.Right)
-            valDisplay.Size     = UDim2.new(0,60,0,16)
-            valDisplay.Position = UDim2.new(1,-62,0,10)
-        end
-
-        local tl = lbl(f, cfg.Title or "Slider", theme.TextPrimary, 13, Enum.Font.GothamMedium)
-        tl.Size     = UDim2.new(1,(showInp and -70 or -68),0,16)
-        tl.Position = UDim2.new(0,0,0,10)
-
-        if hasDesc then
-            local dl = lbl(f, cfg.Desc, theme.TextSecondary, 11, Enum.Font.Gotham)
-            dl.Size     = UDim2.new(1,-68,0,13)
-            dl.Position = UDim2.new(0,0,0,27)
-        end
-
-        local trackY = hasDesc and 50 or 36
-
-        local trackBg = frame(f, theme.ElementStroke, UDim2.new(1,0,0,6))
-        trackBg.Position = UDim2.new(0,0,0,trackY)
-        corner(trackBg, UDim.new(1,0))
-
-        local pct  = (value-mn)/(mx-mn)
-        local fill = frame(trackBg, theme.Accent, UDim2.new(pct,0,1,0))
-        corner(fill, UDim.new(1,0))
-
-        local thumb = frame(trackBg, Color3.fromRGB(255,255,255), UDim2.new(0,16,0,16))
-        thumb.AnchorPoint = Vector2.new(0.5,0.5)
-        thumb.Position    = UDim2.new(pct,0,0.5,0)
-        thumb.ZIndex      = 3
-        corner(thumb, UDim.new(1,0))
-        stroke(thumb, theme.Accent, 2)
-
-        local inputBox = nil
-        if showInp then
-            local ib = frame(f, theme.InputBg, UDim2.new(0,52,0,22))
-            ib.Position = UDim2.new(1,-54,0,8)
-            corner(ib, CORNER_SM)
-            stroke(ib, theme.ElementStroke2, 1)
-
-            local inp = Instance.new("TextBox")
-            inp.Size               = UDim2.new(1,-4,1,0)
-            inp.Position           = UDim2.new(0,2,0,0)
-            inp.BackgroundTransparency = 1
-            inp.Text               = tostring(value)
-            inp.TextColor3         = theme.Accent
-            inp.TextSize           = 11
-            inp.Font               = Enum.Font.GothamBold
-            inp.TextXAlignment     = Enum.TextXAlignment.Center
-            inp.ClearTextOnFocus   = true
-            inp.Parent             = ib
-
-            inp.FocusLost:Connect(function()
-                local v = tonumber(inp.Text)
-                if v then value = math.clamp(math.floor(v/step+0.5)*step, mn, mx) end
-                inp.Text = tostring(value)
-                local p2 = (value-mn)/(mx-mn)
-                tw(fill,{Size=UDim2.new(p2,0,1,0)},0.08)
-                tw(thumb,{Position=UDim2.new(p2,0,0.5,0)},0.08)
-                task.spawn(function() pcall(cfg.Callback or function()end, value) end)
-            end)
-            inputBox = inp
-        end
-
-        local dragging = false
-        local function updateSlider(x)
-            if disabled then return end
-            local rel = math.clamp((x-trackBg.AbsolutePosition.X)/trackBg.AbsoluteSize.X, 0, 1)
-            value = math.clamp(math.floor((mn+rel*(mx-mn))/step+0.5)*step, mn, mx)
-            local p2 = (value-mn)/(mx-mn)
-            tw(fill,{Size=UDim2.new(p2,0,1,0)},0.06)
-            tw(thumb,{Position=UDim2.new(p2,0,0.5,0)},0.06)
-            if valDisplay then valDisplay.Text = tostring(value)..suffix end
-            if inputBox   then inputBox.Text   = tostring(value) end
-            task.spawn(function() pcall(cfg.Callback or function()end, value) end)
-        end
-
-        trackBg.InputBegan:Connect(function(i)
-            if i.UserInputType==Enum.UserInputType.MouseButton1 then dragging=true; updateSlider(i.Position.X) end
-        end)
-        thumb.InputBegan:Connect(function(i)
-            if i.UserInputType==Enum.UserInputType.MouseButton1 then dragging=true end
-        end)
-        UserInputService.InputChanged:Connect(function(i)
-            if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then updateSlider(i.Position.X) end
-        end)
-        UserInputService.InputEnded:Connect(function(i)
-            if i.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end
-        end)
-
-        if disabled then f.BackgroundTransparency=0.4 end
-        f.Parent = page
-
-        local obj = {_frame=f}
-        function obj:Get() return value end
-        function obj:Set(v)
-            value = math.clamp(v,mn,mx)
-            local p2 = (value-mn)/(mx-mn)
-            tw(fill,{Size=UDim2.new(p2,0,1,0)})
-            tw(thumb,{Position=UDim2.new(p2,0,0.5,0)})
-            if valDisplay then valDisplay.Text=tostring(value)..suffix end
-            if inputBox   then inputBox.Text=tostring(value) end
-        end
-        function obj:SetDisabled(v) disabled=v; tw(f,{BackgroundTransparency=v and 0.4 or 0}) end
-        return obj
+    local valDisplay
+    if not showInp then
+        valDisplay=lbl(f,tostring(value)..suffix,theme.Accent,12,Enum.Font.GothamBold,Enum.TextXAlignment.Right)
+        valDisplay.Size=UDim2.new(0,60,0,16)
+        valDisplay.Position=UDim2.new(1,-62,0,10)
     end
+
+    local tl=lbl(f,cfg.Title or "Slider",theme.TextPrimary,13,Enum.Font.GothamMedium)
+    tl.Size=UDim2.new(1,-68,0,16)
+    tl.Position=UDim2.new(0,0,0,10)
+
+    if hasDesc then
+        local dl=lbl(f,cfg.Desc,theme.TextSecondary,11,Enum.Font.Gotham)
+        dl.Size=UDim2.new(1,-68,0,13)
+        dl.Position=UDim2.new(0,0,0,27)
+    end
+
+    local trackY=hasDesc and 50 or 36
+
+    local trackBg=frame(f,theme.ElementStroke,UDim2.new(1,0,0,6))
+    trackBg.Position=UDim2.new(0,0,0,trackY)
+    corner(trackBg,UDim.new(1,0))
+
+    local pct=(value-mn)/(mx-mn)
+    local fill=frame(trackBg,theme.Accent,UDim2.new(pct,0,1,0))
+    corner(fill,UDim.new(1,0))
+
+    local thumb=frame(trackBg,Color3.fromRGB(255,255,255),UDim2.new(0,16,0,16))
+    thumb.AnchorPoint=Vector2.new(0.5,0.5)
+    thumb.Position=UDim2.new(pct,0,0.5,0)
+    thumb.ZIndex=3
+    corner(thumb,UDim.new(1,0))
+    stroke(thumb,theme.Accent,2)
+
+    local inputBox=nil
+    if showInp then
+        local ib=frame(f,theme.InputBg,UDim2.new(0,52,0,22))
+        ib.Position=UDim2.new(1,-54,0,8)
+        corner(ib,CORNER_SM)
+        stroke(ib,theme.ElementStroke2,1)
+
+        local inp=Instance.new("TextBox")
+        inp.Size=UDim2.new(1,-4,1,0)
+        inp.Position=UDim2.new(0,2,0,0)
+        inp.BackgroundTransparency=1
+        inp.Text=tostring(value)
+        inp.TextColor3=theme.Accent
+        inp.TextSize=11
+        inp.Font=Enum.Font.GothamBold
+        inp.TextXAlignment=Enum.TextXAlignment.Center
+        inp.ClearTextOnFocus=true
+        inp.Parent=ib
+
+        inp.FocusLost:Connect(function()
+            local v=tonumber(inp.Text)
+            if v then value=math.clamp(math.floor(v/step+0.5)*step,mn,mx) end
+            inp.Text=tostring(value)
+            local p2=(value-mn)/(mx-mn)
+            tw(fill,{Size=UDim2.new(p2,0,1,0)},0.08)
+            tw(thumb,{Position=UDim2.new(p2,0,0.5,0)},0.08)
+            task.spawn(function()pcall(cfg.Callback or function()end,value)end)
+        end)
+
+        inputBox=inp
+    end
+
+    local dragging=false
+
+    local function updateSlider(x)
+        if disabled then return end
+        local rel=math.clamp((x-trackBg.AbsolutePosition.X)/trackBg.AbsoluteSize.X,0,1)
+        value=math.clamp(math.floor((mn+rel*(mx-mn))/step+0.5)*step,mn,mx)
+        local p2=(value-mn)/(mx-mn)
+        tw(fill,{Size=UDim2.new(p2,0,1,0)},0.06)
+        tw(thumb,{Position=UDim2.new(p2,0,0.5,0)},0.06)
+        if valDisplay then valDisplay.Text=tostring(value)..suffix end
+        if inputBox then inputBox.Text=tostring(value) end
+        task.spawn(function()pcall(cfg.Callback or function()end,value)end)
+    end
+
+    local trackBtn=btn(trackBg,UDim2.new(1,0,0,20),UDim2.new(0,0,0.5,-10),4)
+    trackBtn.MouseButton1Down:Connect(function()
+        if disabled then return end
+        dragging=true
+        local mp=UserInputService:GetMouseLocation()
+        updateSlider(mp.X)
+    end)
+
+    UserInputService.InputChanged:Connect(function(i)
+        if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
+            updateSlider(i.Position.X)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseButton1 then
+            dragging=false
+        end
+    end)
+
+    if disabled then f.BackgroundTransparency=0.4 end
+    f.Parent=page
+
+    local obj={_frame=f}
+    function obj:Get()return value end
+    function obj:Set(v)
+        value=math.clamp(v,mn,mx)
+        local p2=(value-mn)/(mx-mn)
+        tw(fill,{Size=UDim2.new(p2,0,1,0)})
+        tw(thumb,{Position=UDim2.new(p2,0,0.5,0)})
+        if valDisplay then valDisplay.Text=tostring(value)..suffix end
+        if inputBox then inputBox.Text=tostring(value) end
+    end
+    function obj:SetDisabled(v)disabled=v;tw(f,{BackgroundTransparency=v and 0.4 or 0})end
+    return obj
+end
 
     function Tab:Dropdown(cfg)
         cfg = cfg or {}
@@ -935,45 +963,71 @@ local function injectElements(Tab, theme, page)
     end
 
     function Tab:Paragraph(cfg)
-        cfg = cfg or {}
+    cfg = cfg or {}
+    local hasBar = cfg.AccentBar ~= nil
 
-        local f = Instance.new("Frame")
-        f.Size              = UDim2.new(1,0,0,0)
-        f.AutomaticSize     = Enum.AutomaticSize.Y
-        f.BackgroundColor3  = cfg.Color or theme.Element
-        f.BorderSizePixel   = 0
-        if cfg.Transparency then f.BackgroundTransparency=cfg.Transparency end
-        corner(f, CORNER_EL)
-        stroke(f, theme.ElementStroke, 1)
-        pad(f, 10,10,14,14)
+    local outer = Instance.new("Frame")
+    outer.Size = UDim2.new(1, 0, 0, 0)
+    outer.AutomaticSize = Enum.AutomaticSize.Y
+    outer.BackgroundColor3 = cfg.Color or theme.Element
+    outer.BorderSizePixel = 0
+    outer.ClipsDescendants = true
 
-        if cfg.AccentBar then
-            local abar = frame(f, cfg.AccentBar, UDim2.new(0,3,1,0))
-            abar.Position = UDim2.new(0,-14,0,0)
-            corner(abar, UDim.new(0,2))
-        end
+    if cfg.Transparency then
+        outer.BackgroundTransparency = cfg.Transparency
+    end
 
-        local lay = Instance.new("UIListLayout")
-        lay.Padding = UDim.new(0,5)
-        lay.Parent  = f
+    corner(outer, CORNER_EL)
+    stroke(outer, theme.ElementStroke, 1)
 
-        if cfg.Title and cfg.Title~="" then
-            local tl = lbl(f, cfg.Title, theme.TextPrimary, 13, Enum.Font.GothamBold)
-            tl.Size          = UDim2.new(1,0,0,0)
-            tl.AutomaticSize = Enum.AutomaticSize.Y
-            tl.TextWrapped   = true
-            tl.TextYAlignment = Enum.TextYAlignment.Top
-        end
-        if cfg.Desc and cfg.Desc~="" then
-            local dl = lbl(f, cfg.Desc, theme.TextSecondary, 12, Enum.Font.Gotham)
-            dl.Size          = UDim2.new(1,0,0,0)
-            dl.AutomaticSize = Enum.AutomaticSize.Y
-            dl.TextWrapped   = true
-            dl.TextYAlignment = Enum.TextYAlignment.Top
-        end
+    if hasBar then
+        local abar = Instance.new("Frame")
+        abar.Name = "AccentBar"
+        abar.AnchorPoint = Vector2.new(0, 0.5)
+        abar.Position = UDim2.new(0, 0, 0.5, 0)
+        abar.Size = UDim2.new(0, 3, 1, -2)
+        abar.BackgroundColor3 = cfg.AccentBar
+        abar.BorderSizePixel = 0
+        corner(abar, UDim.new(0, 2))
+        abar.Parent = outer
+    end
 
-        f.Parent = page
-        return f
+    local inner = Instance.new("Frame")
+    inner.Size = UDim2.new(1, hasBar and -8 or 0, 0, 0)
+    inner.Position = UDim2.new(0, hasBar and 8 or 0, 0, 0)
+    inner.AutomaticSize = Enum.AutomaticSize.Y
+    inner.BackgroundTransparency = 1
+    inner.BorderSizePixel = 0
+    pad(inner, 10, 10, 14, 14)
+    inner.Parent = outer
+
+    local lay = Instance.new("UIListLayout")
+    lay.Padding = UDim.new(0, 5)
+    lay.FillDirection = Enum.FillDirection.Vertical
+    lay.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    lay.SortOrder = Enum.SortOrder.LayoutOrder
+    lay.Parent = inner
+
+    if cfg.Title and cfg.Title ~= "" then
+        local tl = lbl(inner, cfg.Title, theme.TextPrimary, 13, Enum.Font.GothamBold)
+        tl.Size = UDim2.new(1, 0, 0, 0)
+        tl.AutomaticSize = Enum.AutomaticSize.Y
+        tl.TextWrapped = true
+        tl.TextXAlignment = Enum.TextXAlignment.Left
+        tl.TextYAlignment = Enum.TextYAlignment.Top
+    end
+
+    if cfg.Desc and cfg.Desc ~= "" then
+        local dl = lbl(inner, cfg.Desc, theme.TextSecondary, 12, Enum.Font.Gotham)
+        dl.Size = UDim2.new(1, 0, 0, 0)
+        dl.AutomaticSize = Enum.AutomaticSize.Y
+        dl.TextWrapped = true
+        dl.TextXAlignment = Enum.TextXAlignment.Left
+        dl.TextYAlignment = Enum.TextYAlignment.Top
+    end
+
+    outer.Parent = page
+    return outer
     end
 
     function Tab:Divider(cfg)
@@ -1099,7 +1153,6 @@ local function injectElements(Tab, theme, page)
         local eb = btn(execBox, UDim2.fromScale(1,1), nil, 3)
         eb.MouseButton1Click:Connect(function()
             if disabled then return end
-            ripple(execBox,theme)
             task.spawn(function() pcall(cfg.Callback or function()end) end)
         end)
         eb.MouseEnter:Connect(function() tw(execBox,{BackgroundColor3=theme.AccentLight}) end)
@@ -1186,8 +1239,7 @@ local function injectElements(Tab, theme, page)
 
         if cfg.Callback then
             local b = btn(f)
-            b.MouseButton1Click:Connect(function()
-                ripple(f,theme)
+            b.MouseButton1Click:Connect(function()        
                 task.spawn(function() pcall(cfg.Callback) end)
             end)
             b.MouseEnter:Connect(function() tw(f,{BackgroundColor3=theme.ElementHover}) end)
@@ -1364,133 +1416,264 @@ local function injectElements(Tab, theme, page)
     end
 
     function Tab:ColorPicker(cfg)
-        cfg = cfg or {}
-        local value    = cfg.Value    or Color3.fromRGB(255,255,255)
-        local disabled = cfg.Disabled or false
-        local open     = false
+    cfg = cfg or {}
 
-        local f = baseEl(theme, cfg)
-        f.ClipsDescendants = false
-        titleDesc(f, theme, cfg, 48)
+    local value = cfg.Value or Color3.fromRGB(255,255,255)
+    local disabled = cfg.Disabled or false
+    local open = false
 
-        local preview = frame(f, value, UDim2.new(0,30,0,22))
-        preview.Position = UDim2.new(1,-32,0.5,-11)
-        corner(preview, CORNER_SM)
-        stroke(preview, theme.ElementStroke, 1)
+    local f = baseEl(theme, cfg)
+    f.ClipsDescendants = false
 
-        local panel = frame(f, theme.Element, UDim2.new(0,210,0,0))
-        panel.Position         = UDim2.new(0,0,0,(f.Size.Y.Offset or ELEMENT_H)+4)
-        panel.ClipsDescendants = true
-        panel.ZIndex           = 20
-        corner(panel, CORNER_EL)
-        stroke(panel, theme.ElementStroke, 1)
-        pad(panel,10,10,12,12)
+    titleDesc(f, theme, cfg, 48)
 
-        local play = Instance.new("UIListLayout")
-        play.Padding = UDim.new(0,6)
-        play.Parent  = panel
+    local preview = frame(f, value, UDim2.new(0,30,0,22))
+    preview.Position = UDim2.new(1,-32,0.5,-11)
+    corner(preview, CORNER_SM)
+    stroke(preview, theme.ElementStroke, 1)
 
-        local rgb = { math.floor(value.R*255), math.floor(value.G*255), math.floor(value.B*255) }
+    local panel = Instance.new("Frame")
+    panel.Size = UDim2.new(0,210,0,0)
+    panel.BackgroundColor3 = theme.Element
+    panel.BorderSizePixel = 0
+    panel.ClipsDescendants = true
+    panel.ZIndex = 999
 
-        local function updateColor()
-            value = Color3.fromRGB(rgb[1],rgb[2],rgb[3])
-            tw(preview,{BackgroundColor3=value})
-            task.spawn(function() pcall(cfg.Callback or function()end, value) end)
-        end
+    corner(panel, CORNER_EL)
+    stroke(panel, theme.ElementStroke, 1)
+    pad(panel,10,10,12,12)
 
-        local channels = {{name="R",idx=1,col=Color3.fromRGB(220,60,60)},{name="G",idx=2,col=Color3.fromRGB(60,200,80)},{name="B",idx=3,col=Color3.fromRGB(60,120,220)}}
+    local play = Instance.new("UIListLayout")
+    play.Padding = UDim.new(0,6)
+    play.Parent = panel
 
-        for _,ch in ipairs(channels) do
-            local row = frame(panel, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,22))
-            row.BackgroundTransparency = 1
+    local function positionPanel()
+        local sg = Tab._gui
+        if not sg then return end
 
-            local cl = lbl(row, ch.name, theme.TextSecondary, 10, Enum.Font.GothamBold)
-            cl.Size = UDim2.new(0,14,1,0)
+        panel.Parent = sg
 
-            local tr = frame(row, theme.ElementStroke, UDim2.new(1,-54,0,5))
-            tr.Position = UDim2.new(0,18,0.5,-2)
-            corner(tr, UDim.new(1,0))
+        local abs = preview.AbsolutePosition
+        local sz = preview.AbsoluteSize
 
-            local fi = frame(tr, ch.col, UDim2.new(rgb[ch.idx]/255,0,1,0))
-            corner(fi, UDim.new(1,0))
-            fi.BackgroundTransparency = 0.2
-
-            local th2 = frame(tr, Color3.fromRGB(255,255,255), UDim2.new(0,12,0,12))
-            th2.AnchorPoint = Vector2.new(0.5,0.5)
-            th2.Position    = UDim2.new(rgb[ch.idx]/255,0,0.5,0)
-            th2.ZIndex      = 3
-            corner(th2, UDim.new(1,0))
-            stroke(th2, ch.col, 1.5)
-
-            local vi = Instance.new("TextBox")
-            vi.Size              = UDim2.new(0,30,0,18)
-            vi.Position          = UDim2.new(1,-30,0.5,-9)
-            vi.BackgroundColor3  = theme.InputBg
-            vi.Text              = tostring(rgb[ch.idx])
-            vi.TextColor3        = theme.TextPrimary
-            vi.TextSize          = 10
-            vi.Font              = Enum.Font.Gotham
-            vi.TextXAlignment    = Enum.TextXAlignment.Center
-            vi.ClearTextOnFocus  = true
-            vi.BorderSizePixel   = 0
-            vi.ZIndex            = 21
-            corner(vi, UDim.new(0,3))
-            vi.Parent = row
-
-            vi.FocusLost:Connect(function()
-                local v = math.clamp(tonumber(vi.Text) or rgb[ch.idx],0,255)
-                rgb[ch.idx] = math.floor(v)
-                vi.Text = tostring(rgb[ch.idx])
-                tw(fi,{Size=UDim2.new(v/255,0,1,0)},0.06)
-                tw(th2,{Position=UDim2.new(v/255,0,0.5,0)},0.06)
-                updateColor()
-            end)
-
-            local drag2 = false
-            tr.InputBegan:Connect(function(i)
-                if i.UserInputType==Enum.UserInputType.MouseButton1 then
-                    drag2=true
-                    local r2=math.clamp((i.Position.X-tr.AbsolutePosition.X)/tr.AbsoluteSize.X,0,1)
-                    rgb[ch.idx]=math.floor(r2*255); vi.Text=tostring(rgb[ch.idx])
-                    tw(fi,{Size=UDim2.new(r2,0,1,0)},0.05); tw(th2,{Position=UDim2.new(r2,0,0.5,0)},0.05)
-                    updateColor()
-                end
-            end)
-            UserInputService.InputChanged:Connect(function(i)
-                if drag2 and i.UserInputType==Enum.UserInputType.MouseMovement then
-                    local r2=math.clamp((i.Position.X-tr.AbsolutePosition.X)/tr.AbsoluteSize.X,0,1)
-                    rgb[ch.idx]=math.floor(r2*255); vi.Text=tostring(rgb[ch.idx])
-                    tw(fi,{Size=UDim2.new(r2,0,1,0)},0.05); tw(th2,{Position=UDim2.new(r2,0,0.5,0)},0.05)
-                    updateColor()
-                end
-            end)
-            UserInputService.InputEnded:Connect(function(i)
-                if i.UserInputType==Enum.UserInputType.MouseButton1 then drag2=false end
-            end)
-        end
-
-        local b = btn(f)
-        b.MouseButton1Click:Connect(function()
-            if disabled then return end
-            open = not open
-            local ph = open and (22*3+6*2+20) or 0
-            tw(panel,{Size=UDim2.new(0,210,0,ph)})
-        end)
-        b.MouseEnter:Connect(function() if not disabled then tw(f,{BackgroundColor3=theme.ElementHover}) end end)
-        b.MouseLeave:Connect(function() if not disabled then tw(f,{BackgroundColor3=cfg.Color or theme.Element}) end end)
-
-        if disabled then f.BackgroundTransparency=0.4 end
-        f.Parent = page
-
-        local obj = {_frame=f}
-        function obj:Get() return value end
-        function obj:Set(col)
-            value=col; rgb={math.floor(col.R*255),math.floor(col.G*255),math.floor(col.B*255)}
-            tw(preview,{BackgroundColor3=value})
-        end
-        return obj
+        panel.Position = UDim2.new(0, abs.X - 180, 0, abs.Y + sz.Y + 6)
     end
 
+    local rgb = {
+        math.floor(value.R * 255),
+        math.floor(value.G * 255),
+        math.floor(value.B * 255)
+    }
+
+    local function updateColor()
+        value = Color3.fromRGB(rgb[1], rgb[2], rgb[3])
+
+        tw(preview, {
+            BackgroundColor3 = value
+        })
+
+        task.spawn(function()
+            pcall(cfg.Callback or function() end, value)
+        end)
+    end
+
+    local channels = {
+        {name = "R", idx = 1, col = Color3.fromRGB(220,60,60)},
+        {name = "G", idx = 2, col = Color3.fromRGB(60,200,80)},
+        {name = "B", idx = 3, col = Color3.fromRGB(60,120,220)}
+    }
+
+    for _, ch in ipairs(channels) do
+        local row = frame(panel, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,22))
+        row.BackgroundTransparency = 1
+
+        local cl = lbl(row, ch.name, theme.TextSecondary, 10, Enum.Font.GothamBold)
+        cl.Size = UDim2.new(0,14,1,0)
+
+        local tr = frame(row, theme.ElementStroke, UDim2.new(1,-54,0,5))
+        tr.Position = UDim2.new(0,18,0.5,-2)
+
+        corner(tr, UDim.new(1,0))
+
+        local fi = frame(tr, ch.col, UDim2.new(rgb[ch.idx]/255,0,1,0))
+        fi.BackgroundTransparency = 0.2
+
+        corner(fi, UDim.new(1,0))
+
+        local th2 = frame(tr, Color3.fromRGB(255,255,255), UDim2.new(0,12,0,12))
+        th2.AnchorPoint = Vector2.new(0.5,0.5)
+        th2.Position = UDim2.new(rgb[ch.idx]/255,0,0.5,0)
+        th2.ZIndex = 3
+
+        corner(th2, UDim.new(1,0))
+        stroke(th2, ch.col, 1.5)
+
+        local vi = Instance.new("TextBox")
+        vi.Size = UDim2.new(0,30,0,18)
+        vi.Position = UDim2.new(1,-30,0.5,-9)
+        vi.BackgroundColor3 = theme.InputBg
+        vi.Text = tostring(rgb[ch.idx])
+        vi.TextColor3 = theme.TextPrimary
+        vi.TextSize = 10
+        vi.Font = Enum.Font.Gotham
+        vi.TextXAlignment = Enum.TextXAlignment.Center
+        vi.ClearTextOnFocus = true
+        vi.BorderSizePixel = 0
+        vi.ZIndex = 21
+
+        corner(vi, UDim.new(0,3))
+
+        vi.Parent = row
+
+        vi.FocusLost:Connect(function()
+            local v = math.clamp(tonumber(vi.Text) or rgb[ch.idx],0,255)
+
+            rgb[ch.idx] = math.floor(v)
+            vi.Text = tostring(rgb[ch.idx])
+
+            tw(fi,{
+                Size = UDim2.new(v/255,0,1,0)
+            },0.06)
+
+            tw(th2,{
+                Position = UDim2.new(v/255,0,0.5,0)
+            },0.06)
+
+            updateColor()
+        end)
+
+        local drag2 = false
+
+        tr.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                drag2 = true
+
+                local r2 = math.clamp(
+                    (i.Position.X - tr.AbsolutePosition.X) / tr.AbsoluteSize.X,
+                    0,
+                    1
+                )
+
+                rgb[ch.idx] = math.floor(r2 * 255)
+                vi.Text = tostring(rgb[ch.idx])
+
+                tw(fi,{
+                    Size = UDim2.new(r2,0,1,0)
+                },0.05)
+
+                tw(th2,{
+                    Position = UDim2.new(r2,0,0.5,0)
+                },0.05)
+
+                updateColor()
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(i)
+            if drag2 and i.UserInputType == Enum.UserInputType.MouseMovement then
+                local r2 = math.clamp(
+                    (i.Position.X - tr.AbsolutePosition.X) / tr.AbsoluteSize.X,
+                    0,
+                    1
+                )
+
+                rgb[ch.idx] = math.floor(r2 * 255)
+                vi.Text = tostring(rgb[ch.idx])
+
+                tw(fi,{
+                    Size = UDim2.new(r2,0,1,0)
+                },0.05)
+
+                tw(th2,{
+                    Position = UDim2.new(r2,0,0.5,0)
+                },0.05)
+
+                updateColor()
+            end
+        end)
+
+        UserInputService.InputEnded:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                drag2 = false
+            end
+        end)
+    end
+
+    local b = btn(f)
+
+    b.MouseButton1Click:Connect(function()
+        if disabled then return end
+
+        open = not open
+
+        local ph = open and (22 * 3 + 6 * 2 + 20) or 0
+
+        if open then
+            positionPanel()
+
+            tw(panel, {
+                Size = UDim2.new(0,210,0,ph)
+            })
+        else
+            tw(panel, {
+                Size = UDim2.new(0,210,0,0)
+            })
+
+            task.delay(0.18, function()
+                if not open then
+                    panel.Parent = nil
+                end
+            end)
+        end
+    end)
+
+    b.MouseEnter:Connect(function()
+        if not disabled then
+            tw(f,{
+                BackgroundColor3 = theme.ElementHover
+            })
+        end
+    end)
+
+    b.MouseLeave:Connect(function()
+        if not disabled then
+            tw(f,{
+                BackgroundColor3 = cfg.Color or theme.Element
+            })
+        end
+    end)
+
+    if disabled then
+        f.BackgroundTransparency = 0.4
+    end
+
+    f.Parent = page
+
+    local obj = {
+        _frame = f
+    }
+
+    function obj:Get()
+        return value
+    end
+
+    function obj:Set(col)
+        value = col
+
+        rgb = {
+            math.floor(col.R * 255),
+            math.floor(col.G * 255),
+            math.floor(col.B * 255)
+        }
+
+        tw(preview,{
+            BackgroundColor3 = value
+        })
+    end
+
+    return obj
+    end
+    
     function Tab:Label(cfg)
         cfg = cfg or {}
         local f = frame(page, Color3.fromRGB(0,0,0), UDim2.new(1,0,0,cfg.Height or 22))
