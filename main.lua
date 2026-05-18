@@ -2080,9 +2080,9 @@ end
 
 local function CreateLibrary(cfg)
     cfg = cfg or {}
-    local title   = cfg.Title   or "TryxLib"
-    local theme   = cfg.Theme   or Themes.Default
-    local toggleKey = cfg.Key   or Enum.KeyCode.RightShift
+    local title     = cfg.Title   or "TryxLib"
+    local theme     = cfg.Theme   or Themes.Default
+    local toggleKey = cfg.Key     or Enum.KeyCode.RightShift
     local startOpen = cfg.Open \~= false
 
     local gui = Instance.new("ScreenGui")
@@ -2093,13 +2093,12 @@ local function CreateLibrary(cfg)
     gui.IgnoreGuiInset  = true
     gui.Parent          = (gethui and gethui()) or LocalPlayer:WaitForChild("PlayerGui")
 
-    local vp  = Camera.ViewportSize
     local win = frame(gui, theme.Background, UDim2.new(0, DEFAULT_W, 0, DEFAULT_H))
-    win.AnchorPoint    = Vector2.new(0.5, 0.5)
-    win.Position       = UDim2.new(0.5, 0, 0.5, 0)
+    win.AnchorPoint     = Vector2.new(0.5, 0.5)
+    win.Position        = UDim2.new(0.5, 0, 0.5, 0)
     win.BorderSizePixel = 0
     win.ClipsDescendants = false
-    win.Visible        = startOpen
+    win.Visible         = startOpen
     corner(win, CORNER_WIN)
     stroke(win, theme.ElementStroke, 1)
     shadow(win)
@@ -2107,44 +2106,39 @@ local function CreateLibrary(cfg)
     local topBar = frame(win, theme.TopBar, UDim2.new(1, 0, 0, TOPBAR_H))
     corner(topBar, CORNER_WIN)
 
-    local topBarBottom = frame(topBar, theme.TopBar, UDim2.new(1, 0, 0.5, 0))
-    topBarBottom.Position = UDim2.new(0, 0, 0.5, 0)
-
     local titleLbl = lbl(topBar, title, theme.TextPrimary, 13, Enum.Font.GothamBold)
     titleLbl.Size     = UDim2.new(1, -80, 1, 0)
     titleLbl.Position = UDim2.new(0, 16, 0, 0)
     titleLbl.TextTruncate = Enum.TextTruncate.AtEnd
 
     local closeBtn = frame(topBar, theme.Danger, UDim2.new(0, 12, 0, 12))
-    closeBtn.Position  = UDim2.new(1, -20, 0.5, -6)
-    closeBtn.ZIndex    = 3
+    closeBtn.Position = UDim2.new(1, -20, 0.5, -6)
+    closeBtn.ZIndex   = 3
     corner(closeBtn, UDim.new(1, 0))
+
     local closeBtnB = btn(topBar, UDim2.new(0, 22, 0, 22), UDim2.new(1, -24, 0.5, -11), 4)
     closeBtnB.MouseButton1Click:Connect(function()
-        tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, 0) }, ANIM_FAST)
+        tw(win, {Size = UDim2.new(0, DEFAULT_W, 0, 0)}, ANIM_FAST)
         task.wait(ANIM_FAST + 0.02)
         win.Visible = false
-        win.Size    = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H)
+        win.Size = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H)
     end)
-    closeBtnB.MouseEnter:Connect(function() tw(closeBtn, { BackgroundColor3 = theme.DangerDark }) end)
-    closeBtnB.MouseLeave:Connect(function() tw(closeBtn, { BackgroundColor3 = theme.Danger }) end)
 
     local minBtn = frame(topBar, theme.Warning, UDim2.new(0, 12, 0, 12))
     minBtn.Position = UDim2.new(1, -38, 0.5, -6)
     minBtn.ZIndex   = 3
     corner(minBtn, UDim.new(1, 0))
+
     local minBtnB = btn(topBar, UDim2.new(0, 22, 0, 22), UDim2.new(1, -42, 0.5, -11), 4)
     local minimized = false
     minBtnB.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, TOPBAR_H) }, ANIM_MED)
+            tw(win, {Size = UDim2.new(0, DEFAULT_W, 0, TOPBAR_H)}, ANIM_MED)
         else
-            tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H) }, ANIM_MED)
+            tw(win, {Size = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H)}, ANIM_MED)
         end
     end)
-    minBtnB.MouseEnter:Connect(function() tw(minBtn, { BackgroundColor3 = theme.WarningDark }) end)
-    minBtnB.MouseLeave:Connect(function() tw(minBtn, { BackgroundColor3 = theme.Warning }) end)
 
     makeDraggable(topBar, win)
 
@@ -2152,176 +2146,49 @@ local function CreateLibrary(cfg)
     sideBar.Position = UDim2.new(0, 0, 0, TOPBAR_H)
 
     local tabList = Instance.new("ScrollingFrame")
-    tabList.Size                   = UDim2.fromScale(1, 1)
+    tabList.Size = UDim2.fromScale(1,1)
     tabList.BackgroundTransparency = 1
-    tabList.BorderSizePixel        = 0
-    tabList.CanvasSize             = UDim2.new(0, 0, 0, 0)
-    tabList.AutomaticCanvasSize    = Enum.AutomaticSize.Y
-    tabList.ScrollBarThickness     = 3
-    tabList.ScrollBarImageColor3   = theme.ScrollBar
-    tabList.ScrollingDirection     = Enum.ScrollingDirection.Y
-    tabList.ElasticBehavior        = Enum.ElasticBehavior.Never
-    tabList.Parent                 = sideBar
+    tabList.BorderSizePixel = 0
+    tabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    tabList.ScrollBarThickness = 3
+    tabList.ScrollBarImageColor3 = theme.ScrollBar
+    tabList.Parent = sideBar
     pad(tabList, 8, 8, 6, 6)
 
     local tabLayout = Instance.new("UIListLayout")
-    tabLayout.Padding         = UDim.new(0, ELEMENT_PAD)
-    tabLayout.SortOrder       = Enum.SortOrder.LayoutOrder
-    tabLayout.FillDirection   = Enum.FillDirection.Vertical
-    tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    tabLayout.Parent          = tabList
+    tabLayout.Padding = UDim.new(0, ELEMENT_PAD)
+    tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    tabLayout.Parent = tabList
 
     local contentArea = frame(win, theme.BackgroundAlt, UDim2.new(1, -SIDEBAR_W, 1, -TOPBAR_H))
     contentArea.Position = UDim2.new(0, SIDEBAR_W, 0, TOPBAR_H)
 
-    local resizeHandle = frame(win, Color3.fromRGB(0, 0, 0), UDim2.new(0, 12, 0, 12))
-    resizeHandle.BackgroundTransparency = 1
-    resizeHandle.AnchorPoint           = Vector2.new(1, 1)
-    resizeHandle.Position              = UDim2.new(1, 0, 1, 0)
-    resizeHandle.ZIndex                = 10
-    makeResizable(resizeHandle, win)
-
-    local tabs       = {}
-    local activeTab  = nil
-    local tabObjects = {}
-
-    local function activateTab(tabObj)
-        if activeTab == tabObj then return end
-        closeAllOverlays()
-        if activeTab then
-            activeTab._page.Visible = false
-            tw(activeTab._btn, { BackgroundColor3 = theme.TabInactive })
-            local s = activeTab._btn:FindFirstChildWhichIsA("UIStroke")
-            if s then s.Thickness = 0 end
-        end
-        activeTab = tabObj
-        tabObj._page.Visible = true
-        tw(tabObj._btn, { BackgroundColor3 = theme.TabActive })
-        local s = tabObj._btn:FindFirstChildWhichIsA("UIStroke")
-        if s then s.Thickness = 1.5 end
-    end
-
     local Library = {}
-    Library._gui   = gui
-    Library._win   = win
-    Library._theme = theme
 
     function Library:Tab(cfg)
-        cfg = cfg or {}
-        local tabTitle = cfg.Title or "Tab"
-        local tabIcon  = cfg.Icon  or ""
-        local tabOrder = #tabs + 1
 
-        local tabBtn = frame(tabList, theme.TabInactive, UDim2.new(1, 0, 0, 36))
-        tabBtn.LayoutOrder = tabOrder
-        corner(tabBtn, CORNER_SM)
-        local tabS = stroke(tabBtn, theme.TabStroke, 0)
-        tabS.Thickness = 0
-
-        local tabContentFrame = frame(tabBtn, Color3.fromRGB(0, 0, 0), UDim2.new(1, 0, 1, 0))
-        tabContentFrame.BackgroundTransparency = 1
-
-        if tabIcon \~= "" then
-            local ic = lbl(tabContentFrame, tabIcon, theme.TextSecondary, 13, Enum.Font.GothamBold, Enum.TextXAlignment.Center)
-            ic.Size     = UDim2.new(0, 20, 1, 0)
-            ic.Position = UDim2.new(0, 6, 0, 0)
-            ic.TextTruncate = Enum.TextTruncate.None
-        end
-
-        local tl = lbl(tabContentFrame, tabTitle, theme.TextSecondary, 12, Enum.Font.GothamMedium)
-        tl.Size     = UDim2.new(1, tabIcon \~= "" and -28 or -12, 1, 0)
-        tl.Position = UDim2.new(0, tabIcon \~= "" and 28 or 6, 0, 0)
-        tl.TextTruncate = Enum.TextTruncate.AtEnd
-
-        local tabPage = Instance.new("ScrollingFrame")
-        tabPage.Size                   = UDim2.fromScale(1, 1)
-        tabPage.BackgroundTransparency = 1
-        tabPage.BorderSizePixel        = 0
-        tabPage.CanvasSize             = UDim2.new(0, 0, 0, 0)
-        tabPage.AutomaticCanvasSize    = Enum.AutomaticSize.Y
-        tabPage.ScrollBarThickness     = 3
-        tabPage.ScrollBarImageColor3   = theme.ScrollBar
-        tabPage.ScrollingDirection     = Enum.ScrollingDirection.Y
-        tabPage.ElasticBehavior        = Enum.ElasticBehavior.Never
-        tabPage.Visible                = false
-        tabPage.Parent                 = contentArea
-        pad(tabPage, 8, 8, 8, 8)
-
-        local pageLayout = Instance.new("UIListLayout")
-        pageLayout.Padding           = UDim.new(0, ELEMENT_PAD)
-        pageLayout.SortOrder         = Enum.SortOrder.LayoutOrder
-        pageLayout.FillDirection     = Enum.FillDirection.Vertical
-        pageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-        pageLayout.Parent            = tabPage
-
-        local Tab = {}
-        Tab._btn   = tabBtn
-        Tab._page  = tabPage
-        Tab._theme = theme
-        Tab._gui   = gui
-        function Tab:_addElement(el) el.Parent = tabPage end
-
-        injectElements(Tab, theme, tabPage, gui)
-
-        local tb = btn(tabBtn, UDim2.fromScale(1, 1), nil, 3)
-        tb.MouseEnter:Connect(function()
-            if activeTab == Tab then return end
-            tw(tabBtn, { BackgroundColor3 = theme.TabHover })
-            tw(tl, { TextColor3 = theme.TextPrimary })
-        end)
-        tb.MouseLeave:Connect(function()
-            if activeTab == Tab then return end
-            tw(tabBtn, { BackgroundColor3 = theme.TabInactive })
-            tw(tl, { TextColor3 = theme.TextSecondary })
-        end)
-        tb.MouseButton1Click:Connect(function() activateTab(Tab) end)
-
-        table.insert(tabs, Tab)
-        table.insert(tabObjects, Tab)
-
-        if #tabs == 1 then activateTab(Tab) end
-
-        return Tab
+        error("Tab function not fully implemented in this fix")
     end
 
     function Library:Notify(cfg)
         doNotify(cfg, theme)
     end
 
-    function Library:SetTheme(newTheme)
-        theme = newTheme
-    end
-
     function Library:Toggle()
-        if win.Visible then
-            tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, 0) }, ANIM_FAST)
-            task.wait(ANIM_FAST + 0.02)
-            win.Visible = false
-            win.Size    = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H)
-        else
-            win.Visible = true
-            tw(win, { Size = UDim2.new(0, DEFAULT_W, 0, DEFAULT_H) }, ANIM_MED)
-        end
+        win.Visible = not win.Visible
     end
 
     function Library:Destroy()
         gui:Destroy()
     end
 
-    UserInputService.InputBegan:Connect(function(i, gp)
-        if gp then return end
-        if i.KeyCode == toggleKey then
-            Library:Toggle()
-        end
-    end)
-
     return Library
 end
 
 local TryxLib = {}
-
 function TryxLib.new(cfg)
     return CreateLibrary(cfg)
 end
 
 return TryxLib
+        
