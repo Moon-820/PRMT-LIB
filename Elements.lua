@@ -1596,3 +1596,4 @@ function Elements.NumberInput(tab, cfg)
 end
 
 return Elements
+
